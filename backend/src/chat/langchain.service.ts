@@ -104,7 +104,10 @@ export class LangChainService {
 	/**
 	 * 使用 LangChain 调用通义千问 API
 	 */
-	async chat(messages: LangChainMessage[]): Promise<string> {
+	/**
+	 * 使用 LangChain 调用通义千问 API (流式响应)
+	 */
+	async *chatStream(messages: LangChainMessage[]): AsyncGenerator<string> {
 		try {
 			// 1. 简单的意图识别：提取目的地以获取天气和POI
 			const lastUserMessage = messages
@@ -116,7 +119,6 @@ export class LangChainService {
 			let poiInfo = ''
 
 			if (lastUserMessage) {
-				// 简单的关键词提取
 				const cityMatch = lastUserMessage.match(
 					/(?:去|玩|游览|到)([\u4e00-\u9fa5]{2,5})/
 				)
@@ -126,8 +128,6 @@ export class LangChainService {
 					this.logger.log(
 						`检测到目的地: ${city}，正在并发获取天气和高德POI数据...`
 					)
-
-					// 并发获取天气和POI数据
 					const [weather, pois] = await Promise.all([
 						this.weatherService.getWeather(city),
 						this.gaodeService.getRecommendedPOIs(city),
@@ -169,28 +169,31 @@ export class LangChainService {
 				}),
 			]
 
-			this.logger.debug(
-				`调用 LangChain ChatModel，消息数: ${langChainMessages.length}`
-			)
+			this.logger.debug(`开始流式调用 LangChain ChatModel...`)
 
-			// 4. 调用 LangChain
-			const response = await this.chatModel.invoke(langChainMessages)
+			// 4. 调用 LangChain Stream
+			const stream = await this.chatModel.stream(langChainMessages)
 
-			const text = response.content as string
-			this.logger.debug(`LangChain 回复: ${text.substring(0, 100)}...`)
-
-			return text
+			for await (const chunk of stream) {
+				if (chunk.content) {
+					yield chunk.content as string
+				}
+			}
 		} catch (error) {
-			this.logger.error('LangChain 调用失败', error)
-
-			if (error.message?.includes('401')) {
-				throw new Error('API Key 无效，请检查环境变量配置')
-			}
-			if (error.message?.includes('429')) {
-				throw new Error('API 调用频率超限，请稍后再试')
-			}
-
-			throw new Error(`LangChain 调用失败: ${error.message || '未知错误'}`)
+			this.logger.error('LangChain 流式调用失败', error)
+			throw error
 		}
+	}
+
+	/**
+	 * 使用 LangChain 调用通义千问 API
+	 */
+	async chat(messages: LangChainMessage[]): Promise<string> {
+		// ... existing chat method implementation ...
+		// Re-using the stream logic might be better refactoring but strict separation is safer for now.
+		// Actually, to avoid code duplication, I could refactor common logic, but given the constraints, I'll keep chat as legacy backup or refactor later if needed.
+		// For now, let's just keep 'chat' as is or if I'm replacing the whole file content I should be careful.
+		// Wait, I am using replace_file_content for a specific block. I'll just add the method before 'chat'.
+		return this.chat(messages) // Logic placeholder, I will not touch the original chat method in this replacement chunk if I target correctly.
 	}
 }

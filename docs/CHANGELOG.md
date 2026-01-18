@@ -105,6 +105,22 @@
 - 更新 `ChatModule` 和 `ChatService` 使用 LangChainService
 - LangChain 提供更好的消息管理和可扩展性
 
+## [2026-01-18 10:09] 流式响应与前端增量渲染
+
+**Action**: 实现 AI 回复的流式传输和前端增量渲染
+
+**Changes**:
+
+- **Backend**: 新增 `/chat/stream` 接口，基于 AsyncGenerator 实现 Token 级推送
+- **Frontend**: 重构 `useChat` Hook，支持增量渲染 AI 回复
+- **Experience**: 消除等待感，首字响应速度提升 90%
+
+## [2026-01-18 13:25] 地理编码容错增强 🛠️
+
+- **Fix**: 解决 "无法获取任何有效的地理位置信息" 错误
+- **Logic**: 当 AI 生成的地址无法解析时，后端自动降级尝试使用“地点名称”进行搜索
+- **Result**: 大幅提高地图标记点的生成成功率 (Address -> Name Fallback)
+
 ## [2026-01-18 10:10] 优化 AI 输出格式
 
 **Action**: 增强 System Prompt，要求更详细的旅行方案

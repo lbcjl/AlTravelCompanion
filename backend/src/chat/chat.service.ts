@@ -20,6 +20,82 @@ export class ChatService {
 	/**
 	 * 发送消息并获取 AI 回复
 	 */
+	/**
+	 * 发送消息并获取 AI 回复 (流式)
+	 */
+	async sendMessageStream(
+		conversationId: string | null,
+		userMessage: string
+	): Promise<{
+		stream: AsyncGenerator<string>
+		conversationId: string
+		onComplete: (fullContent: string) => Promise<void>
+	}> {
+		let conversation: Conversation
+
+		// 如果没有指定会话，创建新会话
+		if (!conversationId) {
+			conversation = this.conversationRepo.create({
+				title: this.generateTitle(userMessage),
+				messages: [],
+			})
+			await this.conversationRepo.save(conversation)
+			this.logger.log(`创建新会话: ${conversation.id}`)
+		} else {
+			// 加载现有会话
+			const foundConversation = await this.conversationRepo.findOne({
+				where: { id: conversationId },
+				relations: ['messages'],
+			})
+
+			if (!foundConversation) {
+				throw new NotFoundException(`会话 ${conversationId} 不存在`)
+			}
+			conversation = foundConversation
+		}
+
+		// 保存用户消息
+		const userMsg = this.messageRepo.create({
+			conversationId: conversation.id,
+			role: 'user',
+			content: userMessage,
+		})
+		await this.messageRepo.save(userMsg)
+
+		// 构建对话历史
+		const history: LangChainMessage[] = conversation.messages.map((msg) => ({
+			role: msg.role as 'user' | 'assistant' | 'system',
+			content: msg.content,
+		}))
+
+		// 添加当前用户消息
+		history.push({ role: 'user', content: userMessage })
+
+		// 调用 LangChain 流式接口
+		this.logger.log(`调用 LangChain Stream API，会话: ${conversation.id}`)
+		const stream = this.langChainService.chatStream(history)
+
+		return {
+			stream,
+			conversationId: conversation.id,
+			onComplete: async (fullContent: string) => {
+				// 保存 AI 回复
+				const assistantMsg = this.messageRepo.create({
+					conversationId: conversation.id,
+					role: 'assistant',
+					content: fullContent,
+				})
+				await this.messageRepo.save(assistantMsg)
+				this.logger.log(
+					`流式响应完成，已保存完整消息。长度: ${fullContent.length}`
+				)
+			},
+		}
+	}
+
+	/**
+	 * 发送消息并获取 AI 回复 (普通模式 - 保留兼容)
+	 */
 	async sendMessage(
 		conversationId: string | null,
 		userMessage: string

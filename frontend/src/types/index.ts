@@ -3,7 +3,7 @@ export interface Message {
 	conversationId: string
 	role: 'user' | 'assistant' | 'system'
 	content: string
-	timestamp: Date
+	createdAt: Date
 }
 
 export interface Conversation {

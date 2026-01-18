@@ -43,7 +43,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 				{/* 如果是AI消息，尝试解析并显示地图 */}
 				{isAssistant && <ItineraryMap content={message.content} />}
 
-				<div className='message-time'>{formatTime(message.timestamp)}</div>
+				<div className='message-time'>{formatTime(message.createdAt)}</div>
 			</div>
 
 			{isUser && (

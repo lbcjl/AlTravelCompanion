@@ -97,12 +97,20 @@ export class AmapService {
 				continue
 			}
 
-			// 尝试使用地址进行地理编码
-			const result = await this.geocode(location.address)
+			// 1. 尝试使用地址进行地理编码
+			let result = await this.geocode(location.address)
+
+			// 2. 如果地址失败，尝试使用名称（有时候名称如“故宫”比地址更准确）
+			if (!result && location.name) {
+				this.logger.log(`地址地理编码失败，尝试使用名称: ${location.name}`)
+				result = await this.geocode(location.name)
+			}
+
 			if (result) {
 				results.push({
 					...result,
-					name: location.name, // 保留原始名称
+					name: location.name, // 确保返回的名称是原始名称
+					// 如果地址是空的（用名字查到的），可以考虑回填一个地址，但这里暂时保留解析结果的地址
 				})
 			} else {
 				this.logger.warn(
