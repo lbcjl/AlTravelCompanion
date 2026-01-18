@@ -15,8 +15,7 @@ export default function LoadingModal({ isOpen }: LoadingModalProps) {
 					<div className='cloud cloud-1'>☁️</div>
 					<div className='cloud cloud-2'>☁️</div>
 				</div>
-				<h3>正在为您规划行程...</h3>
-				<p>AI 正在分析最佳路线与景点</p>
+				<p>AI 正在为您定制专属行程...</p>
 			</div>
 		</div>
 	)

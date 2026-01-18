@@ -7,6 +7,7 @@ export interface GaodePOI {
 	name: string
 	type: string
 	address: string
+	adname: string // 区县名称，如 "思明区"
 	location: string // "lng,lat"
 	tel: string
 	distance?: string
@@ -84,15 +85,29 @@ export class GaodeService {
 		this.logger.log(`正在获取 ${city} 的真实推荐数据...`)
 
 		try {
-			// 并发查询景点、美食和酒店
-			const [sights, foods, hotels] = await Promise.all([
-				this.searchPOI('景点', city, '110000'), // 110000 是风景名胜
-				this.searchPOI('美食', city, '050000'), // 050000 是餐饮服务
-				this.searchPOI('酒店', city, '100000'), // 100000 是住宿服务
+			// 1. 先搜索核心景点，确定核心游玩区域（例如用户搜厦门，先找到鼓浪屿所在的思明区）
+			const sights = await this.searchPOI('景点', city, '110000') // 110000 是风景名胜
+
+			let district = ''
+			if (sights.length > 0) {
+				// 获取排名第一的景点的行政区名称 (如 "思明区")
+				district = sights[0].adname || ''
+				this.logger.log(
+					`根据热门景点 [${sights[0].name}] 锁定核心区域: ${district}`
+				)
+			}
+
+			// 2. 基于核心区域搜索美食和酒店
+			// 如果锁定了区域，就搜 "厦门思明区美食"，否则还是搜 "厦门美食"
+			const searchArea = district ? `${city}${district}` : city
+
+			const [foods, hotels] = await Promise.all([
+				this.searchPOI('美食', searchArea, '050000'), // 050000 是餐饮服务
+				this.searchPOI('酒店', searchArea, '100000'), // 100000 是住宿服务
 			])
 
-			// 格式化数据为 Markdown 列表供 AI 阅读
-			let context = `\n**【真实数据参考】高德地图为您找到 ${city} 的以下真实地点（请优先从中选择）：**\n`
+			// 3. 格式化数据为 Markdown 列表供 AI 阅读
+			let context = `\n**【真实数据参考】高德地图为您找到 ${city}${district ? `(${district})` : ''} 的以下真实地点（请优先从中选择）：**\n`
 
 			if (sights.length > 0) {
 				context += `\n🏞️ **推荐景点**：\n`
@@ -105,7 +120,7 @@ export class GaodeService {
 			}
 
 			if (foods.length > 0) {
-				context += `\n🥡 **推荐餐厅**：\n`
+				context += `\n🥡 **推荐餐厅** (位于${district || city})：\n`
 				foods.slice(0, 5).forEach((p) => {
 					const rating = p.biz_ext?.rating ? ` / 评分:${p.biz_ext.rating}` : ''
 					const cost = p.biz_ext?.cost ? ` / 人均:¥${p.biz_ext.cost}` : ''
@@ -115,7 +130,7 @@ export class GaodeService {
 			}
 
 			if (hotels.length > 0) {
-				context += `\n🏨 **推荐酒店**：\n`
+				context += `\n🏨 **推荐酒店** (位于${district || city})：\n`
 				hotels.slice(0, 5).forEach((p) => {
 					const rating = p.biz_ext?.rating ? ` / 评分:${p.biz_ext.rating}` : ''
 					const cost = p.biz_ext?.cost ? ` / 参考价:¥${p.biz_ext.cost}` : ''

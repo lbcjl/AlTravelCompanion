@@ -4,42 +4,47 @@
 	left: 0;
 	width: 100vw;
 	height: 100vh;
-	background: rgba(255, 255, 255, 0.8);
+	background: rgba(255, 255, 255, 0.6);
 	backdrop-filter: blur(8px);
 	z-index: 1000;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	animation: fadeIn 0.3s ease;
+	animation: fadeIn 0.4s ease-out;
 }
 
 .loading-modal-content {
-	background: white;
+	background: rgba(255, 255, 255, 0.9);
 	padding: 40px;
-	border-radius: 24px;
-	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+	border-radius: var(--radius-xl);
+	box-shadow: var(--shadow-float);
 	text-align: center;
-	max-width: 400px;
+	max-width: 360px;
 	width: 90%;
-	border: 1px solid rgba(255, 255, 255, 0.5);
+	border: 1px solid white;
 }
 
 .loading-modal-content h3 {
-	margin: 20px 0 10px;
-	color: var(--color-text-main);
-	font-size: 1.5rem;
+	margin: 16px 0 8px;
+	color: var(--text-primary);
+	font-size: 1.25rem;
+	font-weight: 600;
 }
 
 .loading-modal-content p {
-	color: var(--color-text-secondary);
+	color: var(--primary-color);
 	margin: 0;
+	font-size: 0.95rem;
+	font-weight: 500;
+	opacity: 0.8;
+	animation: pulse 2s infinite ease-in-out;
 }
 
 .plane-animation {
-	height: 100px;
+	height: 80px;
 	position: relative;
 	overflow: hidden;
-	margin-bottom: 20px;
+	margin-bottom: 24px;
 }
 
 .plane {
@@ -48,15 +53,17 @@
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	animation: float 2s ease-in-out infinite;
+	animation: float 2.5s ease-in-out infinite;
 	z-index: 2;
+	filter: drop-shadow(0 4px 6px rgba(37, 99, 235, 0.2));
 }
 
 .cloud {
 	position: absolute;
-	font-size: 2rem;
+	font-size: 1.5rem;
 	opacity: 0.5;
 	animation: cloudMove 3s linear infinite;
+	filter: grayscale(0.2);
 }
 
 .cloud-1 {
@@ -74,10 +81,10 @@
 @keyframes float {
 	0%,
 	100% {
-		transform: translate(-50%, -50%) translateY(0);
+		transform: translate(-50%, -50%) translateY(0) rotate(0deg);
 	}
 	50% {
-		transform: translate(-50%, -50%) translateY(-10px);
+		transform: translate(-50%, -50%) translateY(-8px) rotate(2deg);
 	}
 }
 
@@ -87,13 +94,23 @@
 		opacity: 0;
 	}
 	10% {
-		opacity: 0.5;
+		opacity: 0.6;
 	}
 	90% {
-		opacity: 0.5;
+		opacity: 0.6;
 	}
 	100% {
 		left: 120%;
 		opacity: 0;
+	}
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 0.6;
+	}
+	50% {
+		opacity: 1;
 	}
 }

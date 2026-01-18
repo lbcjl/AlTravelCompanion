@@ -39,11 +39,18 @@ export function useChat() {
 		})
 
 		try {
+			console.log('--- Debug Request ---', {
+				conversationId: conversation?.id,
+				content,
+			})
+
 			// 2. 发送非流式请求（LoadingModal 显示加载状态）
 			const response = await chatApi.sendMessage({
 				conversationId: conversation?.id,
 				content,
 			})
+
+			console.log('--- Debug AI Response ---', response.message)
 
 			// 3. 收到完整响应后，更新会话
 			const assistantMessage: Message = {
