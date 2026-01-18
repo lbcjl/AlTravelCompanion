@@ -98,17 +98,20 @@ export class GaodeService {
 			}
 
 			// 2. 基于核心区域搜索美食和酒店
-			// 如果锁定了区域，就搜 "厦门 思明区 美食" (加空格)，否则还是搜 "厦门 美食"
-			const searchArea = district ? `${city} ${district}` : city
+			// 修正：city参数必须是纯城市名，否则citylimit失效会导致搜索全国(变成北京)
+			// 将区名拼接到关键字中： "思明区 美食"
+			const keywordPrefix = district ? `${district} ` : ''
 
 			let [foods, hotels] = await Promise.all([
-				this.searchPOI('美食', searchArea, '050000'), // 050000 是餐饮服务
-				this.searchPOI('酒店', searchArea, '100000'), // 100000 是住宿服务
+				this.searchPOI(`${keywordPrefix}美食`, city, '050000'), // 050000 是餐饮服务
+				this.searchPOI(`${keywordPrefix}酒店`, city, '100000'), // 100000 是住宿服务
 			])
 
 			// ⚠️ 降级策略：如果指定区域没搜到，尝试全市搜索（防止因区域关键词导致颗粒无收，引发AI幻觉）
 			if (district && (foods.length === 0 || hotels.length === 0)) {
-				this.logger.warn(`在 [${district}] 未搜到充足数据，降级为全市搜索...`)
+				this.logger.warn(
+					`在 [${city} ${district}] 未搜到充足数据，降级为全市搜索...`
+				)
 				const [cityFoods, cityHotels] = await Promise.all([
 					foods.length === 0
 						? this.searchPOI('美食', city, '050000')

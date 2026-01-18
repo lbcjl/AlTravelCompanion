@@ -325,4 +325,12 @@
 - **排版优化**: 优化了标题、列表、粗体的显示效果，提升阅读体验
 - **无缝衔接**: 地图组件与新渲染的 Markdown 内容完美融合
 
-**Fix**: 解决之前表格以纯文本显示不直观的问题
+## [2026-01-18 16:30] Gaode API & Process Cleanup
+
+- **Fixed**: `GaodeService` search logic.
+  - **Issue**: Passing `"${city} ${district}"` as the `city` parameter to Gaode API caused `citylimit` to be ignored, resulting in nationwide search results (e.g., Beijing restaurants for Xiamen queries).
+  - **Fix**: Changed logic to pass pure `city` name to the `city` parameter and prepend `district` to `keywords` (e.g., `keywords: "Siming District Food", city: "Xiamen"`).
+  - **Impact**: Ensures search results are strictly within the target city and district.
+- **Fixed**: Port 3000 conflict.
+  - **Issue**: Frontend dev server or orphaned backend processes occupying port 3000.
+  - **Action**: Provided command `netstat -ano | findstr :3000` and `taskkill` to help user terminate processes.
