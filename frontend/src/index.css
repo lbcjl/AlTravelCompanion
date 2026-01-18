@@ -1,81 +1,82 @@
 /* ==========================================
-   🎨 智能旅游规划应用 - 设计系统 (Fresh & Clean)
-   主题：晨曦微光 × 清新自然
-   配色：云雾白 → 天空蓝 → 活力橙
+   🎨 Design System: Ethereal Journey (AI Travel Planner)
+   Based on UI/UX Pro Max principles
    ========================================== */
 
+/* Google Fonts - Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 :root {
-	/* === 主题色 - 清新明亮配色 === */
-	--color-primary: #3b82f6; /* 活力蓝 */
-	--color-primary-light: #60a5fa;
-	--color-secondary: #f97316; /* 活力橙 */
-	--color-accent: #8b5cf6; /* 优雅紫 */
+	/* === New Palette: Ocean & Slate === */
+	--primary-color: #2563eb; /* Blue 600 - Action */
+	--primary-hover: #1d4ed8; /* Blue 700 */
+	--primary-light: #eff6ff; /* Blue 50 */
+	--primary-gradient: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
 
-	/* === 功能色 === */
-	--color-success: #10b981;
-	--color-warning: #f59e0b;
-	--color-error: #ef4444;
+	--secondary-color: #f59e0b; /* Amber 500 - Warmth */
+	--success-color: #10b981; /* Emerald 500 */
+	--error-color: #ef4444; /* Red 500 */
 
-	/* === 中性色 (Light Mode) === */
-	--color-bg-base: #f8fafc; /* 基础背景 - 极淡灰蓝 */
-	--color-bg-card: #ffffff; /* 卡片背景 - 纯白 */
-	--color-bg-hover: #f1f5f9; /* 悬停背景 */
+	/* === Surface Colors (Light Mode) === */
+	--bg-color: #f8fafc; /* Slate 50 - Base */
+	--bg-card: #ffffff; /* Card */
+	--bg-hover: #f1f5f9; /* Slate 100 */
 
-	--color-text-main: #1e293b; /* 主文本 - 深蓝灰 */
-	--color-text-secondary: #64748b; /* 次级文本 */
-	--color-text-muted: #94a3b8; /* 弱文本 */
+	/* === Text Colors === */
+	--text-primary: #0f172a; /* Slate 900 - High Contrast */
+	--text-secondary: #64748b; /* Slate 500 */
+	--text-muted: #94a3b8; /* Slate 400 */
 
-	--color-border: #e2e8f0; /* 边框 */
-	--color-divider: #f1f5f9;
+	/* === Borders & Shadows === */
+	--border-color: #e2e8f0; /* Slate 200 */
 
-	/* === 玻璃拟态效果 (Light Glass) === */
-	--glass-bg: rgba(255, 255, 255, 0.75);
-	--glass-border: rgba(255, 255, 255, 0.6);
-	--glass-blur: 20px;
-	--glass-shadow:
-		0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-
-	/* === 渐变 === */
-	--gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-	--gradient-warm: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-	--gradient-bg: linear-gradient(to bottom right, #f0f9ff, #e0f2fe, #fdf4ff);
-
-	/* === 阴影 === */
-	--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-	--shadow-md:
-		0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+	/* Soft Shadows */
+	--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 	--shadow-lg:
-		0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-	--shadow-xl:
-		0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-	--shadow-float: 0 20px 40px -12px rgba(59, 130, 246, 0.15);
+		0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+	--shadow-float:
+		0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
-	/* === 动画时长 === */
-	--duration-fast: 150ms;
-	--duration-normal: 300ms;
-	--duration-slow: 500ms;
+	/* === Spacing System === */
+	--spacing-xs: 4px;
+	--spacing-sm: 8px;
+	--spacing-md: 16px;
+	--spacing-lg: 24px;
+	--spacing-xl: 32px;
 
-	/* === 字体 === */
-	--font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-	--font-body: 'Inter', system-ui, sans-serif;
-	--font-mono: 'JetBrains Mono', monospace;
-
-	/* === 间距 === */
-	--spacing-xs: 0.5rem;
-	--spacing-sm: 1rem;
-	--spacing-md: 1.5rem;
-	--spacing-lg: 2rem;
-	--spacing-xl: 3rem;
-
-	/* === 边框圆角 === */
-	--radius-sm: 0.5rem;
-	--radius-md: 1rem;
-	--radius-lg: 1.5rem;
+	/* === Radius === */
+	--radius-sm: 6px;
+	--radius-md: 12px;
+	--radius-lg: 16px;
+	--radius-xl: 24px;
 	--radius-full: 9999px;
+
+	/* === Typography === */
+	font-family:
+		'Inter',
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		Roboto,
+		Oxygen,
+		Ubuntu,
+		Cantarell,
+		'Open Sans',
+		'Helvetica Neue',
+		sans-serif;
+	line-height: 1.6;
+	font-weight: 400;
+
+	/* === Glassmorphism Utilities === */
+	--glass-bg: rgba(255, 255, 255, 0.85);
+	--glass-border: rgba(255, 255, 255, 0.5);
+	--glass-blur: 16px;
 }
 
 /* ==========================================
-   基础样式重置
+   Base Reset & Global Styles
    ========================================== */
 
 * {
@@ -84,43 +85,20 @@
 	box-sizing: border-box;
 }
 
-html {
-	font-size: 16px;
+body {
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	color: var(--text-primary);
+	background-color: var(--bg-color);
+	/* Subtle pattern background for texture */
+	background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+	background-size: 32px 32px;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
-
-body {
-	font-family: var(--font-body);
-	background: var(--color-bg-base);
-	color: var(--color-text-main);
-	line-height: 1.6;
-	overflow-x: hidden;
-
-	/* 静态清爽背景，减少性能消耗，增加通透感 */
-	background-color: #f8fafc;
-	background-image:
-		radial-gradient(
-			circle at 10% 20%,
-			rgba(59, 130, 246, 0.04) 0%,
-			transparent 40%
-		),
-		radial-gradient(
-			circle at 90% 80%,
-			rgba(249, 115, 22, 0.04) 0%,
-			transparent 40%
-		),
-		radial-gradient(
-			circle at 50% 50%,
-			rgba(139, 92, 246, 0.03) 0%,
-			transparent 60%
-		);
-	background-attachment: fixed;
-}
-
-/* ==========================================
-   排版系统
-   ========================================== */
 
 h1,
 h2,
@@ -128,101 +106,70 @@ h3,
 h4,
 h5,
 h6 {
-	font-family: var(--font-display);
-	font-weight: 700;
-	line-height: 1.2;
-}
-
-h1 {
-	font-size: 3rem;
-}
-h2 {
-	font-size: 2.25rem;
-}
-h3 {
-	font-size: 1.75rem;
-}
-h4 {
-	font-size: 1.5rem;
-}
-
-p {
-	margin-bottom: 1rem;
+	color: var(--text-primary);
+	font-weight: 600;
+	margin: 0 0 var(--spacing-sm) 0;
+	letter-spacing: -0.025em; /* Tighter tracking for headings */
 }
 
 /* ==========================================
-   通用组件样式
+   Utility Classes
    ========================================== */
 
-.container {
-	max-width: 1200px;
-	margin: 0 auto;
-	padding: 0 var(--spacing-md);
-}
-
-.glass-card {
+/* Glass Panel Effect */
+.glass-panel {
 	background: var(--glass-bg);
 	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
 	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--glass-shadow);
-	transition: all var(--duration-normal) ease;
+	box-shadow: var(--shadow-sm);
 }
 
-.glass-card:hover {
-	transform: translateY(-2px);
-	box-shadow: var(--shadow-lg);
-	border-color: rgba(255, 255, 255, 0.8);
-}
-
-.btn {
-	font-family: var(--font-display);
-	font-weight: 600;
-	padding: 0.75rem 1.5rem;
-	border: none;
-	border-radius: var(--radius-full);
-	cursor: pointer;
-	transition: all var(--duration-normal) ease;
-	font-size: 0.95rem;
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	letter-spacing: 0.01em;
-}
-
-.btn-primary {
-	background: var(--gradient-primary);
-	color: white;
-	box-shadow: var(--shadow-md);
-}
-
-.btn-primary:hover {
+/* Floating Elements (Input, Popovers) */
+.glass-floating {
+	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border: 1px solid rgba(255, 255, 255, 0.8);
 	box-shadow: var(--shadow-float);
-	transform: translateY(-2px);
 }
 
-.btn-primary:active {
-	transform: translateY(0);
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
 }
 
-.btn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-	transform: none !important;
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #cbd5e1;
+	border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #94a3b8;
 }
 
 /* ==========================================
-   动画工具类
+   Animations
    ========================================== */
-
-.fade-in {
-	animation: fadeIn var(--duration-normal) ease;
-}
 
 @keyframes fadeIn {
 	from {
 		opacity: 0;
-		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes slideUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
 	}
 	to {
 		opacity: 1;
@@ -230,132 +177,119 @@ p {
 	}
 }
 
-.slide-in-left {
-	animation: slideInLeft var(--duration-normal) ease;
+.animate-fade-in {
+	animation: fadeIn 0.4s ease-out forwards;
 }
 
-@keyframes slideInLeft {
-	from {
-		opacity: 0;
-		transform: translateX(-20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
+.animate-slide-up {
+	animation: slideUp 0.5s ease-out forwards;
 }
 
-.slide-in-right {
-	animation: slideInRight var(--duration-normal) ease;
-}
-
-@keyframes slideInRight {
-	from {
-		opacity: 0;
-		transform: translateX(20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-.pulse {
-	animation: pulse 2s ease infinite;
-}
-
-@keyframes pulse {
-	0%,
-	100% {
-		opacity: 1;
-	}
-	50% {
-		opacity: 0.7;
-	}
-}
-
-.shimmer {
-	background: linear-gradient(
-		90deg,
-		rgba(255, 255, 255, 0) 0%,
-		rgba(255, 255, 255, 0.1) 50%,
-		rgba(255, 255, 255, 0) 100%
-	);
-	background-size: 200% 100%;
-	animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-	0% {
-		background-position: -200% 0;
-	}
-	100% {
-		background-position: 200% 0;
-	}
+/* Helper for truncated text */
+.text-truncate {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 /* ==========================================
-   滚动条样式
+   Missing Utilities (Mimicking Tailwind)
    ========================================== */
-
-::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+.flex {
+	display: flex;
+}
+.flex-col {
+	flex-direction: column;
+}
+.flex-wrap {
+	flex-wrap: wrap;
+}
+.items-center {
+	align-items: center;
+}
+.justify-center {
+	justify-content: center;
+}
+.justify-between {
+	justify-content: space-between;
+}
+.gap-1 {
+	gap: 0.25rem;
+}
+.gap-2 {
+	gap: 0.5rem;
+}
+.gap-3 {
+	gap: 0.75rem;
+}
+.gap-4 {
+	gap: 1rem;
+}
+.gap-6 {
+	gap: 1.5rem;
 }
 
-::-webkit-scrollbar-track {
-	background: var(--color-bg-card);
+.h-full {
+	height: 100%;
+}
+.w-full {
+	width: 100%;
+}
+.max-w-md {
+	max-width: 28rem;
 }
 
-::-webkit-scrollbar-thumb {
-	background: var(--color-bg-hover);
-	border-radius: var(--radius-full);
+.text-sm {
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+}
+.text-lg {
+	font-size: 1.125rem;
+	line-height: 1.75rem;
+}
+.text-xl {
+	font-size: 1.25rem;
+	line-height: 1.75rem;
+}
+.text-2xl {
+	font-size: 1.5rem;
+	line-height: 2rem;
+}
+.text-6xl {
+	font-size: 3.75rem;
+	line-height: 1;
+}
+.text-center {
+	text-align: center;
+}
+.text-muted {
+	color: var(--text-muted);
 }
 
-::-webkit-scrollbar-thumb:hover {
-	background: var(--color-sky);
+.mb-2 {
+	margin-bottom: 0.5rem;
+}
+.mb-6 {
+	margin-bottom: 1.5rem;
+}
+.mb-8 {
+	margin-bottom: 2rem;
+}
+.p-8 {
+	padding: 2rem;
+}
+.px-6 {
+	padding-left: 1.5rem;
+	padding-right: 1.5rem;
+}
+.py-3 {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
 }
 
-/* ==========================================
-   选择文本样式
-   ========================================== */
-
-::selection {
-	background: var(--color-sky);
-	color: white;
+.cursor-pointer {
+	cursor: pointer;
 }
-
-::-moz-selection {
-	background: var(--color-sky);
-	color: white;
-}
-
-/* ==========================================
-   响应式断点
-   ========================================== */
-
-@media (max-width: 768px) {
-	html {
-		font-size: 14px;
-	}
-
-	h1 {
-		font-size: 2rem;
-	}
-	h2 {
-		font-size: 1.5rem;
-	}
-	h3 {
-		font-size: 1.25rem;
-	}
-
-	.container {
-		padding: 0 var(--spacing-sm);
-	}
-}
-
-@media (max-width: 480px) {
-	html {
-		font-size: 12px;
-	}
+.opacity-0 {
+	opacity: 0;
 }

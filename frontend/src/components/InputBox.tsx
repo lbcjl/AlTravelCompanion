@@ -38,7 +38,7 @@ export default function InputBox({
 				placeholder={placeholder}
 				disabled={disabled}
 				rows={1}
-				className='input-textarea'
+				className='chat-input'
 			/>
 			<button
 				onClick={handleSend}

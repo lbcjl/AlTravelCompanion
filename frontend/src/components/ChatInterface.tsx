@@ -48,78 +48,72 @@ export default function ChatInterface() {
 	}
 
 	return (
-		<div className='app-container'>
+		<div className='chat-layout'>
 			<LoadingModal isOpen={isLoading} />
-			{/* 左侧：聊天区域 */}
-			<div className='chat-sidebar'>
-				<div className='chat-header'>
-					<div className='header-content'>
-						<div className='header-icon'>✈️</div>
-						<div className='header-text'>
+			{/* Left Panel: Glassmorphism Chat Area */}
+			<div className='chat-container'>
+				<header className='chat-header'>
+					<div className='flex items-center gap-3'>
+						<div className='text-2xl'>✈️</div>
+						<div>
 							<h1>智能旅游规划</h1>
-							<p>AI 旅行助手</p>
+							<p className='text-sm text-muted'>AI Travel Companion</p>
 						</div>
 					</div>
 					{conversation && (
-						<button onClick={startNewConversation} className='new-chat-button'>
-							<svg
-								width='16'
-								height='16'
-								viewBox='0 0 24 24'
-								fill='none'
-								stroke='currentColor'
-								strokeWidth='2'
-							>
-								<path d='M12 5v14M5 12h14' />
-							</svg>
-							新对话
+						<button onClick={startNewConversation} className='new-chat-btn'>
+							<span className='text-lg'>+</span> 新对话
 						</button>
 					)}
-				</div>
+				</header>
 
-				<div className='messages-container'>
+				<div className='messages-area'>
 					{!conversation ? (
-						<div className='welcome-message'>
-							<div className='welcome-icon'>🗺️</div>
-							<h2>开始您的旅程</h2>
-							<p>告诉我您的旅行计划，右侧将实时为您生成路线地图</p>
-							<div className='quick-starts'>
+						<div className='flex flex-col items-center justify-center h-full text-center p-8 opacity-0 animate-fade-in'>
+							<div className='text-6xl mb-6 animate-slide-up'>🌍</div>
+							<h2 className='mb-2'>开启您的梦幻旅程</h2>
+							<p className='text-muted mb-8 max-w-md'>
+								告诉我您的目的地、时间和预算，为您生成包含真实景点、美食和酒店的完美行程。
+							</p>
+							<div className='flex flex-wrap justify-center gap-3'>
 								<button
 									onClick={() => handleSendMessage('我想去日本京都旅游5天')}
-									className='quick-start-btn'
+									className='btn btn-secondary glass-card px-6 py-3 hover:bg-white'
 								>
-									🇯🇵 京都5日游
+									🌸 京都赏樱 5日游
 								</button>
 								<button
 									onClick={() =>
 										handleSendMessage('帮我规划上海周末游，预算3000元')
 									}
-									className='quick-start-btn'
+									className='btn btn-secondary glass-card px-6 py-3 hover:bg-white'
 								>
-									🏙️ 上海周末游
+									🏙️ 上海周末 Citywalk
 								</button>
 							</div>
 						</div>
 					) : (
-						<div className='messages-list'>
+						<>
 							{conversation.messages.map((message) => (
 								<MessageBubble key={message.id} message={message} />
 							))}
 							<div ref={messagesEndRef} />
-						</div>
+						</>
 					)}
 				</div>
 
-				<div className='chat-input-wrapper'>
+				<div className='input-area'>
 					<InputBox
 						onSend={handleSendMessage}
 						disabled={isLoading}
-						placeholder={conversation ? '继续对话...' : '描述您的旅行需求...'}
+						placeholder={
+							conversation ? '继续规划您的行程...' : '例如：下周去三亚玩4天...'
+						}
 					/>
 				</div>
 			</div>
 
-			{/* 右侧：地图面板 */}
+			{/* Right Panel: Map & Itinerary */}
 			<div className='map-panel'>
 				<ItineraryPanel
 					content={latestItineraryContent}
@@ -127,7 +121,7 @@ export default function ChatInterface() {
 				/>
 			</div>
 
-			{/* 错误提示 */}
+			{/* Toast Notification */}
 			{showToast && error && (
 				<Toast
 					message={error}

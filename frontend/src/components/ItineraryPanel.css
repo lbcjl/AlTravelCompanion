@@ -3,7 +3,7 @@
 	display: flex;
 	flex-direction: column;
 	background: white;
-	border-left: 1px solid var(--color-border);
+	/* border-left: 1px solid var(--border-color); */ /* Border is handled by parent map-panel */
 	overflow: hidden;
 }
 
@@ -12,9 +12,10 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	border-bottom: 1px solid var(--color-border);
+	border-bottom: 1px solid var(--border-color);
 	background: rgba(255, 255, 255, 0.8);
 	backdrop-filter: blur(10px);
+	z-index: 10;
 }
 
 .panel-title {
@@ -26,24 +27,24 @@
 .panel-title h2 {
 	font-size: 1.125rem;
 	font-weight: 700;
-	color: var(--color-text-main);
+	color: var(--text-primary);
 	margin: 0;
 }
 
 .status-tag {
 	font-size: 0.75rem;
 	padding: 4px 8px;
-	background: #f0f9ff;
-	color: var(--color-primary);
+	background: var(--primary-light);
+	color: var(--primary-color);
 	border-radius: var(--radius-full);
-	font-weight: 500;
+	font-weight: 600;
 	animation: pulse 2s infinite;
 }
 
 .panel-content {
 	flex: 1;
 	position: relative;
-	background: #f1f5f9; /*稍微深一点的背景，突出卡片*/
+	background: var(--bg-hover); /* Slate 100 */
 	overflow-y: auto;
 	scroll-behavior: smooth;
 	padding: var(--spacing-md);
@@ -56,8 +57,6 @@
 	padding-bottom: var(--spacing-xl);
 }
 
-/* Removed map-container-full */
-
 .empty-state {
 	display: flex;
 	flex-direction: column;
@@ -66,19 +65,19 @@
 	height: 100%;
 	padding: var(--spacing-xl);
 	text-align: center;
-	color: var(--color-text-secondary);
+	color: var(--text-secondary);
 }
 
 .empty-icon {
 	font-size: 4rem;
 	margin-bottom: var(--spacing-md);
-	opacity: 0.5;
-	filter: grayscale(1);
+	opacity: 0.6;
+	filter: grayscale(0.5);
 }
 
 .empty-state h3 {
 	font-size: 1.25rem;
-	color: var(--color-text-main);
+	color: var(--text-primary);
 	margin-bottom: var(--spacing-sm);
 }
 
@@ -86,4 +85,5 @@
 	font-size: 0.9rem;
 	max-width: 300px;
 	line-height: 1.6;
+	color: var(--text-muted);
 }

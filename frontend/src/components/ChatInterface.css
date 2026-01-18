@@ -1,173 +1,160 @@
-/* === 分屏布局容器 === */
-.app-container {
+/* Main Layout - Dual Panel Grid */
+.chat-layout {
+	display: grid;
+	grid-template-columns: 380px 1fr; /* Fixed width sidebar, fluid content */
 	height: 100vh;
 	width: 100vw;
-	display: flex;
+	background-color: var(--bg-color);
+	gap: var(--spacing-md);
+	padding: var(--spacing-md);
 	overflow: hidden;
-	background: var(--color-bg-base);
 }
 
-/* === 左侧聊天栏 === */
-.chat-sidebar {
-	width: 450px;
-	min-width: 350px;
-	max-width: 550px;
+/* Left Panel: Chat Area (Glassmorphism) */
+.chat-container {
 	display: flex;
 	flex-direction: column;
-	background: rgba(255, 255, 255, 0.5);
+	background: rgba(255, 255, 255, 0.7);
+	border: 1px solid var(--glass-border);
+	border-radius: var(--radius-xl);
+	box-shadow: var(--shadow-lg);
 	backdrop-filter: blur(20px);
-	border-right: 1px solid var(--color-border);
+	-webkit-backdrop-filter: blur(20px);
+	overflow: hidden;
+	height: 100%;
 	position: relative;
-	z-index: 10;
-	box-shadow: var(--shadow-xl);
 }
 
-/* === 右侧地图面板 === */
-.map-panel {
-	flex: 1;
-	height: 100vh;
-	position: relative;
-	background: #fff;
-}
-
-/* === 顶部标题栏 (Sidebar Internal) === */
+/* Header */
 .chat-header {
-	padding: var(--spacing-md);
 	display: flex;
-	align-items: center;
 	justify-content: space-between;
-	background: rgba(255, 255, 255, 0.8);
+	align-items: center;
+	padding: var(--spacing-lg);
+	background: rgba(255, 255, 255, 0.5);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 	backdrop-filter: blur(10px);
-	border-bottom: 1px solid var(--color-border);
-	flex-shrink: 0;
+	z-index: 10;
 }
 
-.header-content {
-	display: flex;
-	align-items: center;
-	gap: var(--spacing-sm);
-}
-
-.header-icon {
-	font-size: 2rem;
-}
-
-.header-text h1 {
+.chat-header h1 {
 	font-size: 1.25rem;
-	font-weight: 800;
-	color: var(--color-text-main);
 	margin: 0;
+	background: var(--primary-gradient);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	font-weight: 700;
+	letter-spacing: -0.02em;
 }
 
-.header-text p {
-	font-size: 0.75rem;
-	color: var(--color-text-secondary);
-	margin: 0;
-}
-
-.new-chat-button {
+.new-chat-btn {
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	padding: 6px 12px;
-	background: white;
-	border: 1px solid var(--color-border);
+	gap: 6px;
+	padding: 8px 16px;
 	border-radius: var(--radius-full);
-	color: var(--color-text-secondary);
-	font-size: 0.8rem;
+	background: white;
+	color: var(--primary-color);
 	font-weight: 600;
+	border: 1px solid var(--primary-light);
 	cursor: pointer;
 	transition: all 0.2s ease;
+	font-size: 0.85rem;
+	box-shadow: var(--shadow-sm);
 }
 
-.new-chat-button:hover {
-	border-color: var(--color-primary);
-	color: var(--color-primary);
-	background: #f0f9ff;
+.new-chat-btn:hover {
+	background: var(--primary-color);
+	color: white;
+	box-shadow: var(--shadow-md);
+	transform: translateY(-1px);
 }
 
-/* === 消息容器 === */
-.messages-container {
+/* Messages Area */
+.messages-area {
 	flex: 1;
 	overflow-y: auto;
-	padding: var(--spacing-md);
+	padding: var(--spacing-lg);
+	display: flex;
+	flex-direction: column;
+	width: 100%;
 	scroll-behavior: smooth;
 }
 
-/* === 输入区域 === */
-.chat-input-wrapper {
-	padding: var(--spacing-md);
-	background: rgba(255, 255, 255, 0.9);
-	backdrop-filter: blur(10px);
-	border-top: 1px solid var(--color-border);
-	flex-shrink: 0;
-}
-
-/* === 欢迎页面 (Simplified for Sidebar) === */
-.welcome-message {
-	padding: var(--spacing-xl) var(--spacing-md);
+/* Empty State / Welcome Screen */
+.welcome-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
 	text-align: center;
+	padding: var(--spacing-xl);
+	opacity: 0;
+	animation: fadeIn 0.5s ease forwards;
 }
 
-.welcome-icon {
-	font-size: 4rem;
-	margin-bottom: var(--spacing-md);
+/* Quick Action Buttons */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	cursor: pointer;
+	font-weight: 500;
 }
 
-.welcome-message h2 {
-	font-size: 1.5rem;
-	margin-bottom: var(--spacing-sm);
-	color: var(--color-text-main);
-}
-
-.welcome-message > p {
-	font-size: 0.9rem;
-	margin-bottom: var(--spacing-lg);
-}
-
-.quick-starts {
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacing-sm);
-}
-
-.quick-start-btn {
-	padding: 12px;
+.btn-secondary {
 	background: white;
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-md);
-	font-size: 0.9rem;
-	text-align: left;
-	transition: all 0.2s;
+	border: 1px solid var(--border-color);
+	color: var(--text-primary);
 }
 
-.quick-start-btn:hover {
-	border-color: var(--color-primary);
-	box-shadow: var(--shadow-md);
-	transform: translateX(4px);
+.glass-card {
+	background: rgba(255, 255, 255, 0.8);
+	backdrop-filter: blur(8px);
+	border: 1px solid white;
+	box-shadow: var(--shadow-sm);
 }
 
-/* === 消息列表 === */
-.messages-list {
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacing-md);
+/* Input Area */
+.input-area {
+	padding: var(--spacing-lg);
+	background: white; /* Fallback */
+	background: rgba(255, 255, 255, 0.6);
+	/* border-top: 1px solid rgba(255, 255, 255, 0.3); */
+	z-index: 10;
 }
 
-/* === 响应式 === */
+/* Right Panel: Map Container */
+.map-panel {
+	height: 100%;
+	width: 100%;
+	border-radius: var(--radius-xl);
+	overflow: hidden;
+	box-shadow: var(--shadow-lg);
+	background: white;
+	border: 1px solid var(--border-color);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+	.chat-layout {
+		grid-template-columns: 1fr;
+		grid-template-rows: 60% 40%;
+	}
+}
+
 @media (max-width: 768px) {
-	.app-container {
-		flex-direction: column;
+	.chat-layout {
+		padding: 0;
+		grid-template-columns: 1fr;
+		grid-template-rows: 1fr; /* Show chat only by default or handle responsive toggle */
+		gap: 0;
 	}
 
-	.chat-sidebar {
-		width: 100%;
-		height: 50vh;
-		border-right: none;
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.map-panel {
-		height: 50vh;
+	.chat-container {
+		border-radius: 0;
+		border: none;
 	}
 }

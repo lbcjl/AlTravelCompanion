@@ -1,50 +1,57 @@
+/* Day Card - Clean Modern Style */
 .day-card {
 	background: white;
-	border-radius: var(--radius-lg);
+	border-radius: var(--radius-xl);
+	padding: var(--spacing-lg);
 	box-shadow: var(--shadow-md);
-	margin-bottom: var(--spacing-lg);
+	border: 1px solid var(--border-color);
+	transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+	position: relative;
 	overflow: hidden;
-	border: 1px solid var(--color-border);
-	transition: transform 0.2s ease;
+	margin-bottom: var(--spacing-lg);
 }
 
 .day-card:hover {
-	transform: translateY(-2px);
-	box-shadow: var(--shadow-lg);
+	transform: translateY(-4px);
+	box-shadow: var(--shadow-float);
+	border-color: var(--primary-light);
 }
 
+/* Header Section */
 .day-header {
-	padding: var(--spacing-md);
-	background: linear-gradient(to right, #f8fafc, #fff);
-	border-bottom: 1px solid var(--color-border);
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: var(--spacing-md);
+	margin-bottom: var(--spacing-lg);
+	padding-bottom: var(--spacing-md);
+	border-bottom: 1px solid var(--bg-hover);
 }
 
 .day-badge {
-	width: 32px;
-	height: 32px;
-	background: var(--color-primary);
+	background: var(--primary-gradient);
 	color: white;
-	border-radius: 50%;
+	min-width: 40px;
+	height: 40px;
+	border-radius: 12px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-weight: 800;
-	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.2rem;
+	box-shadow: var(--shadow-sm);
 	flex-shrink: 0;
 }
 
 .day-title-section {
 	flex: 1;
-	min-width: 0;
 }
 
-.day-header h3 {
-	margin: 0 0 4px 0;
-	font-size: 1.1rem;
-	color: var(--color-text-main);
+.day-title-section h3 {
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: var(--text-primary);
+	margin: 0 0 8px 0;
+	line-height: 1.3;
 }
 
 .day-meta {
@@ -55,100 +62,124 @@
 
 .weather-tag,
 .cost-tag {
-	font-size: 0.75rem;
-	padding: 2px 8px;
-	border-radius: 12px;
-	background: rgba(59, 130, 246, 0.1);
-	color: var(--color-primary);
-	font-weight: 500;
-	white-space: nowrap;
+	font-size: 0.8rem;
+	padding: 4px 10px;
+	border-radius: 20px;
+	font-weight: 600;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.weather-tag {
+	background: #fff7ed;
+	color: #c2410c;
+	border: 1px solid #ffedd5;
 }
 
 .cost-tag {
-	background: rgba(34, 197, 94, 0.1);
-	color: #16a34a;
+	background: #f0fdf4;
+	color: #15803d;
+	border: 1px solid #dcfce7;
 }
 
+/* Timeline */
 .day-timeline {
-	padding: var(--spacing-md);
+	position: relative;
+	margin-left: 12px;
+	padding-left: 28px;
+	border-left: 2px solid #e2e8f0;
 }
 
 .timeline-item {
-	display: flex;
-	gap: var(--spacing-md);
-	margin-bottom: var(--spacing-sm);
 	position: relative;
+	margin-bottom: 28px;
 }
 
 .timeline-item:last-child {
 	margin-bottom: 0;
 }
 
-/* 连接线 */
-.timeline-item:not(:last-child)::before {
+.timeline-item::before {
 	content: '';
 	position: absolute;
-	left: 48px; /* 根据 time 宽度调整 */
-	top: 24px;
-	bottom: -16px;
-	width: 2px;
-	background: #e2e8f0;
+	left: -35px;
+	top: 6px;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: white;
+	border: 3px solid var(--primary-color);
+	z-index: 2;
+	box-shadow: 0 0 0 3px white;
 }
 
 .timeline-time {
-	width: 40px;
-	font-size: 0.8rem;
-	color: var(--color-text-muted);
-	text-align: right;
-	padding-top: 4px;
-	flex-shrink: 0;
+	font-size: 0.85rem;
+	color: var(--text-muted);
+	font-weight: 600;
+	margin-bottom: 4px;
+	font-variant-numeric: tabular-nums;
 }
 
 .timeline-content {
-	flex: 1;
-	padding-bottom: var(--spacing-sm);
+	background: var(--bg-hover);
+	padding: 12px 16px;
+	border-radius: var(--radius-md);
+	transition: background 0.2s;
+}
+
+.timeline-content:hover {
+	background: #f1f5f9;
 }
 
 .timeline-title {
 	display: flex;
 	align-items: center;
+	flex-wrap: wrap;
 	gap: 8px;
 	margin-bottom: 4px;
 }
 
 .loc-name {
-	font-weight: 600;
-	color: var(--color-text-main);
+	font-weight: 700;
+	color: var(--text-primary);
+	font-size: 1rem;
 }
 
 .loc-tag {
 	font-size: 0.7rem;
-	padding: 2px 6px;
+	padding: 2px 8px;
 	border-radius: 4px;
-	background: #f1f5f9;
-	color: #64748b;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 }
 
 .loc-tag.restaurant {
-	background: #fff7ed;
-	color: #ea580c;
+	background: #fef3c7;
+	color: #b45309;
 }
 .loc-tag.hotel {
-	background: #eff6ff;
-	color: #2563eb;
+	background: #dbeafe;
+	color: #1d4ed8;
 }
 .loc-tag.attraction {
-	background: #f0fdf4;
-	color: #16a34a;
+	background: #d1fae5;
+	color: #047857;
 }
 
 .timeline-desc {
-	font-size: 0.85rem;
-	color: var(--color-text-secondary);
-	line-height: 1.4;
+	font-size: 0.9rem;
+	color: var(--text-secondary);
+	line-height: 1.6;
 }
 
+/* Map Wrapper */
 .day-map-wrapper {
-	height: 300px;
-	border-top: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	overflow: hidden;
+	border: 1px solid var(--border-color);
+	margin-top: 24px;
+	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
