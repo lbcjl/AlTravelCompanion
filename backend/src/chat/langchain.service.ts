@@ -50,6 +50,11 @@ export class LangChainService {
 ## 🗣️ 语气与风格
 请保持 **热情、专业且令人向往** 的语气。
 
+## 🚫 话题限制 (关键)
+你是一位**专职**的旅行规划师，**仅**回答与旅行相关的问题（包括：行程规划、景点介绍、交通住宿、各地美食、预算计算、签证政策等）。
+- **如果用户咨询无关话题**（如：写代码、数学题、政治新闻、娱乐八卦、心理咨询等），**必须**礼貌拒绝。
+- **拒绝话术示例**：“我是您的专属旅行规划助手，专注于为您打造完美旅程。这个问题超出了我的专业范围，我们还是以此为契机，聊聊您想去哪儿玩吧？🌍”
+
 ## 📝 方案生成要求
 当你收集到上述信息后，请生成一份**真实、详细**的旅行方案。
 
@@ -129,46 +134,79 @@ export class LangChainService {
 	async *chatStream(messages: LangChainMessage[]): AsyncGenerator<string> {
 		try {
 			// 1. 简单的意图识别：提取目的地以获取天气和POI
-			const lastUserMessage = messages
-				.slice()
-				.reverse()
-				.find((m) => m.role === 'user')?.content
+			// 也就是不仅看最新一条，而是从后往前找最近一次提到的目的地
+			const reversedMessages = messages.slice().reverse()
+
+			// 找到最近一条包含用户的消息（用于日志显示）
+			const lastUserMessage = reversedMessages.find(
+				(m) => m.role === 'user',
+			)?.content
 
 			let weatherInfo = ''
 			let poiInfo = ''
-			let city: string | null = null
+			let city: string | null = null // 目的地
+			let origin: string | null = null // 出发地
+			let budget: string | null = null // 预算
 
-			if (lastUserMessage) {
-				// 优先提取目的地城市（匹配"去XX"、"到XX"、"玩XX"等模式）
-				// 排除"从XX出发"的起点城市
-				const destinationMatch = lastUserMessage.match(
-					/(?:去|到|玩|游览|前往)([^\s，,。、]{2,5}?)(?:玩|旅游|旅行|游|自由行)?/,
+			// 遍历历史消息寻找目的地上下文
+			for (const msg of reversedMessages) {
+				if (msg.role === 'user') {
+					// 1. 提取目的地
+					if (!city) {
+						const destMatch = msg.content.match(
+							/(?:去|到|玩|游览|前往)([^\s，,。、]{2,5}?)(?:玩|旅游|旅行|游|自由行)?/,
+						)
+						if (destMatch) city = destMatch[1]
+					}
+
+					// 2. 提取出发地 ("从北京出发", "北京走")
+					if (!origin) {
+						const originMatch = msg.content.match(
+							/(?:从|自|离)([^\s，,。、]{2,5}?)(?:出发|走|飞)?/,
+						)
+						if (originMatch) origin = originMatch[1]
+					}
+
+					// 3. 提取预算 ("预算2000", "2000元")
+					if (!budget) {
+						const budgetMatch = msg.content.match(/(\d+(?:万|k|K)?)元?/)
+						if (
+							budgetMatch &&
+							(msg.content.includes('预算') || msg.content.includes('花'))
+						) {
+							budget = budgetMatch[1] // 简单提取，仅供日志参考
+						}
+					}
+
+					if (city && origin) break
+				}
+			}
+
+			this.logger.log(`📝 [Intent Analysis]`)
+			this.logger.log(`   - 🗣️ 用户输入: "${lastUserMessage || 'Unknown'}"`)
+			this.logger.log(`   - 🏁 目的地 (Dest): ${city || '❓ 未知'}`)
+			this.logger.log(`   - 🚀 出发地 (Origin): ${origin || '❓ 未知'}`)
+			this.logger.log(`   - 💰 预算参考: ${budget || '❓ 未知'}`)
+
+			if (city) {
+				// 只有当城市改变，或者之前没有缓存数据的时候才去获取吗？
+				// 简化起见，每次都获取最新的（利用 Service 内部缓存或快速 API）
+				// 也可以考虑缓存到 conversation 级别，但目前 stateless 比较简单
+
+				this.logger.log(
+					`检测到目的地: ${city}，维持环境数据注入 (Weather/POI)...`,
 				)
+				const [weather, pois] = await Promise.all([
+					this.weatherService.getWeather(city),
+					this.gaodeService.getRecommendedPOIs(city),
+				])
 
-				// 如果没有明确的目的地，尝试匹配任意中文城市名
-				city = destinationMatch ? destinationMatch[1] : null
+				if (weather) {
+					weatherInfo = `\n**当前目的地(${city})天气参考**：\n${weather}\n请根据天气情况调整行程安排。`
+				}
 
-				this.logger.log(`用户消息: "${lastUserMessage}"`)
-				this.logger.log(`提取的目的地城市: ${city || '未检测到'}`)
-
-				if (city) {
-					this.logger.log(
-						`检测到目的地: ${city}，正在并发获取天气和高德POI数据...`,
-					)
-					const [weather, pois] = await Promise.all([
-						this.weatherService.getWeather(city),
-						this.gaodeService.getRecommendedPOIs(city),
-					])
-
-					if (weather) {
-						weatherInfo = `\n**当前目的地(${city})天气参考**：\n${weather}\n请根据天气情况调整行程安排。`
-						this.logger.log(`✅ 天气数据获取成功`)
-					}
-
-					if (pois) {
-						poiInfo = pois
-						this.logger.log(`✅ POI数据获取成功，长度: ${pois.length} 字符`)
-					}
+				if (pois) {
+					poiInfo = pois
 				}
 			}
 

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
+import { APP_GUARD } from '@nestjs/core'
 import { ChatModule } from './chat/chat.module'
 import { TravelModule } from './travel/travel.module'
 import { MapModule } from './map/map.module'
@@ -50,6 +52,20 @@ import { TravelPlan } from './entities/travel-plan.entity'
 		ChatModule,
 		TravelModule,
 		MapModule,
+
+		// Rate Limiting (防刷)
+		ThrottlerModule.forRoot([
+			{
+				ttl: 60000, // 1分钟
+				limit: 60, // 限制60次请求
+			},
+		]),
+	],
+	providers: [
+		{
+			provide: APP_GUARD,
+			useClass: ThrottlerGuard,
+		},
 	],
 })
 export class AppModule {}
