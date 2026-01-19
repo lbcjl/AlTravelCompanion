@@ -15,7 +15,11 @@ export function useItineraryParser(content: string): ItineraryParserResult {
 	const [parsedContent, setParsedContent] = useState<string>('')
 
 	useEffect(() => {
-		if (!content) return
+		if (!content) {
+			setDays([])
+			setParsedContent('')
+			return
+		}
 		if (content === parsedContent) return // 避免重复解析
 
 		// 只有当内容看起来包含完整的表格时才解析
