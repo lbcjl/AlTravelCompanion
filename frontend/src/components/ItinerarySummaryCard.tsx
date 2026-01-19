@@ -45,7 +45,13 @@ export default function ItinerarySummaryCard({
 					<h3>{days} 天旅行规划</h3>
 					<div className='card-stats'>
 						{totalCost > 0 && (
-							<span className='stat-tag'>💰 约 ¥{totalCost}</span>
+							<span
+								className='stat-tag'
+								title='⚠️ 金额为根据行程单中列出的费用项目累加估算，仅供参考。实际费用请以实时价格为准。'
+								style={{ cursor: 'help' }}
+							>
+								💰 约 ¥{totalCost}
+							</span>
 						)}
 						<span className='stat-tag'>📍 {locationCount} 个地点</span>
 					</div>
