@@ -5,6 +5,7 @@ import {
 	HumanMessage,
 	SystemMessage,
 	AIMessage,
+	ToolMessage,
 } from '@langchain/core/messages'
 import { WeatherService } from './weather.service'
 import { GaodeService } from './gaode.service'
@@ -94,7 +95,9 @@ export class LangChainService {
 - **真实性验证**：所有地点必须真实存在。
 
 ### 4. 💰 预算明细
+- **必须使用计算器工具**：请调用 \`calculator\` 工具将表格中的每一笔费用相加，确保总额绝对准确。
 - 列出交通（往返+城际+市内）、住宿、餐饮、门票的预估总价。
+- **禁止口算**：必须依赖工具计算结果。
 
 ## 🏷️ 格式强制要求 (非常重要)
 在回复的第一行，**必须**插入一条包含主要目的地城市的隐藏注释，格式如下：
@@ -131,15 +134,11 @@ export class LangChainService {
 	}
 
 	/**
-	 * 使用 LangChain 调用通义千问 API
-	 */
-	/**
 	 * 使用 LangChain 调用通义千问 API (流式响应)
 	 */
 	async *chatStream(messages: LangChainMessage[]): AsyncGenerator<string> {
 		try {
 			// 1. 简单的意图识别：提取目的地以获取天气和POI
-			// 也就是不仅看最新一条，而是从后往前找最近一次提到的目的地
 			const reversedMessages = messages.slice().reverse()
 
 			// 找到最近一条包含用户的消息（用于日志显示）
@@ -188,18 +187,14 @@ export class LangChainService {
 			}
 
 			this.logger.log(`📝 [Intent Analysis]`)
-			this.logger.log(`   - 🗣️ 用户输入: "${lastUserMessage || 'Unknown'}"`)
-			this.logger.log(`   - 🏁 目的地 (Dest): ${city || '❓ 未知'}`)
-			this.logger.log(`   - 🚀 出发地 (Origin): ${origin || '❓ 未知'}`)
-			this.logger.log(`   - 💰 预算参考: ${budget || '❓ 未知'}`)
+			this.logger.log(`   - 🗣️ 用户输入: "\${lastUserMessage || 'Unknown'}"`)
+			this.logger.log(`   - 🏁 目的地 (Dest): \${city || '❓ 未知'}`)
+			this.logger.log(`   - 🚀 出发地 (Origin): \${origin || '❓ 未知'}`)
+			this.logger.log(`   - 💰 预算参考: \${budget || '❓ 未知'}`)
 
 			if (city) {
-				// 只有当城市改变，或者之前没有缓存数据的时候才去获取吗？
-				// 简化起见，每次都获取最新的（利用 Service 内部缓存或快速 API）
-				// 也可以考虑缓存到 conversation 级别，但目前 stateless 比较简单
-
 				this.logger.log(
-					`检测到目的地: ${city}，维持环境数据注入 (Weather/POI)...`,
+					`检测到目的地: \${city}，维持环境数据注入 (Weather/POI)...`,
 				)
 				const [weather, pois] = await Promise.all([
 					this.weatherService.getWeather(city),
@@ -207,8 +202,8 @@ export class LangChainService {
 				])
 
 				if (weather) {
-					this.logger.log(`⛅ 天气数据: ${weather}`)
-					weatherInfo = `\n**当前目的地(${city})天气参考**：\n${weather}\n请根据天气情况调整行程安排。`
+					this.logger.log(`⛅ 天气数据: \${weather}`)
+					weatherInfo = `\n**当前目的地(\${city})天气参考**：\n\${weather}\n请根据天气情况调整行程安排。`
 				}
 
 				if (pois) {
@@ -222,14 +217,14 @@ export class LangChainService {
 				const performDuckDuckGo = async () => {
 					try {
 						this.logger.log(
-							`🔍 使用 DuckDuckGo 搜索 "${city} 旅游攻略" (Fallback)...`,
+							`🔍 使用 DuckDuckGo 搜索 "\${city} 旅游攻略" (Fallback)...`,
 						)
 						const searchTool = new DuckDuckGoSearch()
 						const searchResults = await searchTool.invoke(
-							`${city} 旅游攻略 必去景点 美食推荐`,
+							`\${city} 旅游攻略 必去景点 美食推荐`,
 						)
 						if (searchResults) {
-							searchInfo = `\n## 🌐 网络搜索实时资讯 (DuckDuckGo)\n${searchResults}\n`
+							searchInfo = `\n## 🌐 网络搜索实时资讯 (DuckDuckGo)\n\${searchResults}\n`
 							this.logger.log(`✅ DuckDuckGo 搜索成功`)
 						}
 					} catch (ddgErr) {
@@ -239,7 +234,7 @@ export class LangChainService {
 						) {
 							this.logger.warn(`⚠️ DuckDuckGo 限流，跳过搜索 (不影响主流程)`)
 						} else {
-							this.logger.warn(`⚠️ DuckDuckGo 搜索失败: ${ddgErr.message}`)
+							this.logger.warn(`⚠️ DuckDuckGo 搜索失败: \${ddgErr.message}`)
 						}
 					}
 				}
@@ -251,22 +246,22 @@ export class LangChainService {
 						// 方案 A: 使用 Tavily (更稳定，专门为 AI 优化)
 						try {
 							this.logger.log(
-								`🔍 使用 Tavily 搜索 "${city} 旅游攻略" (API Key present)...`,
+								`🔍 使用 Tavily 搜索 "\${city} 旅游攻略" (API Key present)...`,
 							)
 							// 动态引入本地自定义工具
 							const { TavilyTool } = await import('./tavily.tool')
 							const searchTool = new TavilyTool(tavilyKey)
 
 							const searchResults = await searchTool.invoke(
-								`${city} 旅游攻略 必去景点 美食推荐`,
+								`\${city} 旅游攻略 必去景点 美食推荐`,
 							)
 							if (searchResults) {
-								searchInfo = `\n## 🌐 网络搜索实时资讯 (Tavily)\n${searchResults}\n`
+								searchInfo = `\n## 🌐 网络搜索实时资讯 (Tavily)\n\${searchResults}\n`
 								this.logger.log(`✅ Tavily 搜索成功`)
 							}
 						} catch (tavilyErr) {
 							this.logger.warn(
-								`⚠️ Tavily 搜索失败 (自动降级): ${tavilyErr.message}`,
+								`⚠️ Tavily 搜索失败 (自动降级): \${tavilyErr.message}`,
 							)
 							// 降级尝试 DuckDuckGo
 							await performDuckDuckGo()
@@ -314,14 +309,77 @@ export class LangChainService {
 
 			this.logger.debug(`开始流式调用 LangChain ChatModel...`)
 
-			// 4. 调用 LangChain Stream
-			const stream = await this.chatModel.stream(langChainMessages)
+			// 4. 工具绑定与流式调用 (Tool Calling Loop)
+			// 引入计算器工具
+			const { Calculator } =
+				await import('@langchain/community/tools/calculator')
+			const tools = [new Calculator()]
+			const modelWithTools = this.chatModel.bindTools(tools)
 
-			for await (const chunk of stream) {
-				if (chunk.content) {
-					yield chunk.content as string
+			// 定义处理流的函数
+			const processStream = async function* (
+				inputMessages: any[],
+			): AsyncGenerator<string> {
+				const stream = await modelWithTools.stream(inputMessages)
+				let finalContent = ''
+				let toolCallChunks: any[] = []
+
+				for await (const chunk of stream) {
+					// 1. 实时返回文本内容
+					if (chunk.content) {
+						yield chunk.content as string
+						finalContent += chunk.content
+					}
+					// 2. 收集工具调用片段
+					if (chunk.tool_call_chunks && chunk.tool_call_chunks.length > 0) {
+						toolCallChunks = toolCallChunks.concat(chunk.tool_call_chunks)
+					}
+				}
+
+				// 3. 如果有工具调用，执行并递归
+				if (toolCallChunks.length > 0) {
+					// 构造完整的 AI Message (包含 tool_calls)
+					const aiMsg = await modelWithTools.invoke(inputMessages)
+
+					if (aiMsg.tool_calls && aiMsg.tool_calls.length > 0) {
+						// 将 AI 的回复 (包含 tool_calls) 加入历史
+						const newMessages = [...inputMessages, aiMsg]
+
+						// 执行工具
+						for (const toolCall of aiMsg.tool_calls) {
+							const tool = tools.find((t) => t.name === toolCall.name)
+							if (tool) {
+								try {
+									const result = await tool.invoke(toolCall.args)
+
+									newMessages.push(
+										new ToolMessage({
+											tool_call_id: toolCall.id!,
+											content: result,
+										}),
+									)
+								} catch (err) {
+									console.error(`Tool execution failed:`, err)
+									newMessages.push(
+										new ToolMessage({
+											tool_call_id: toolCall.id!,
+											content: 'Error: Calculation failed.',
+										}),
+									)
+								}
+							}
+						}
+
+						// 再次调用模型生成基于工具结果的回答 (递归) - 这里使用流式
+						const finalStream = await modelWithTools.stream(newMessages)
+						for await (const chunk of finalStream) {
+							if (chunk.content) yield chunk.content as string
+						}
+					}
 				}
 			}
+
+			yield* processStream(langChainMessages)
 		} catch (error) {
 			this.logger.error('LangChain 流式调用失败', error)
 			throw error

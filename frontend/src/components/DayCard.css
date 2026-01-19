@@ -133,12 +133,31 @@
 	background: #f1f5f9;
 }
 
+.timeline-header-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 6px;
+}
+
 .timeline-title {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 8px;
-	margin-bottom: 6px;
+	/* margin-bottom remove as it is now in header-row */
+}
+
+.timeline-cost {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--primary-color);
+	background: #f0fdfa;
+	padding: 2px 8px;
+	border-radius: 4px;
+	border: 1px solid #ccfbf1;
+	white-space: nowrap;
+	margin-left: 8px;
 }
 
 .loc-name {
@@ -174,6 +193,22 @@
 	color: var(--text-secondary);
 	line-height: 1.6;
 	margin-bottom: 12px;
+}
+
+/* Markdown Styles in Timeline Description */
+.timeline-desc.markdown-body p {
+	margin-bottom: 8px;
+}
+.timeline-desc.markdown-body p:last-child {
+	margin-bottom: 0;
+}
+.timeline-desc.markdown-body ul,
+.timeline-desc.markdown-body ol {
+	padding-left: 18px;
+	margin-bottom: 8px;
+}
+.timeline-desc.markdown-body li {
+	margin-bottom: 4px;
 }
 
 /* New Styles for Extras (Highlights, Food, Transport) */

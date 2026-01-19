@@ -60,18 +60,29 @@ export default function DayCard({ day, index }: DayCardProps) {
 					<div key={idx} className='timeline-item'>
 						<div className='timeline-time'>{loc.time || '待定'}</div>
 						<div className='timeline-content'>
-							<div className='timeline-title'>
-								<span className='loc-name'>{loc.name}</span>
-								<span className={`loc-tag ${loc.type || 'attraction'}`}>
-									{loc.type === 'restaurant'
-										? '美食'
-										: loc.type === 'hotel'
-											? '住宿'
-											: '景点'}
-								</span>
+							<div className='timeline-header-row'>
+								<div className='timeline-title'>
+									<span className='loc-name'>{loc.name}</span>
+									<span className={`loc-tag ${loc.type || 'attraction'}`}>
+										{loc.type === 'restaurant'
+											? '美食'
+											: loc.type === 'hotel'
+												? '住宿'
+												: '景点'}
+									</span>
+								</div>
+								{loc.cost && (
+									<div className='timeline-cost'>
+										{loc.cost.includes('¥') || loc.cost.includes('免费')
+											? loc.cost
+											: `¥${loc.cost}`}
+									</div>
+								)}
 							</div>
-							<div className='timeline-desc'>
-								{loc.description || loc.address}
+							<div className='timeline-desc markdown-body'>
+								<ReactMarkdown remarkPlugins={[remarkGfm]}>
+									{loc.description || loc.address}
+								</ReactMarkdown>
 							</div>
 
 							{/* New: Highlights & Food */}

@@ -148,7 +148,12 @@ export const parseMarkdownTable = (content: string): DayItinerary[] => {
 				else if (h.includes('类型')) headerMap['type'] = idx
 				else if (h.includes('时长') || h.includes('建议时长'))
 					headerMap['duration'] = idx
-				else if (h.includes('费用') || h.includes('花费'))
+				else if (
+					h.includes('费用') ||
+					h.includes('花费') ||
+					h.includes('门票') ||
+					h.includes('人均')
+				)
 					headerMap['cost'] = idx
 				else if (h.includes('描述') || h.includes('备注'))
 					headerMap['description'] = idx
