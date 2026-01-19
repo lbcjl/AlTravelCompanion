@@ -322,43 +322,83 @@
 /* Tips Section */
 .day-tips {
 	margin-top: 20px;
-	background: #fffbeb;
+	padding: 16px;
+	background-color: #fffbeb;
 	border: 1px solid #fcd34d;
 	border-radius: var(--radius-md);
-	padding: 16px;
 }
 
 .tips-header {
-	font-weight: 700;
-	color: #92400e;
+	font-weight: 600;
+	color: #b45309;
 	margin-bottom: 12px;
 	display: flex;
 	align-items: center;
 	gap: 6px;
+	font-size: 1rem;
 }
 
-.tips-list {
-	list-style: none;
-	padding: 0;
-	margin: 0;
-}
-
-.tips-list li {
-	position: relative;
-	padding-left: 20px;
-	margin-bottom: 6px;
-	font-size: 0.9rem;
+.tips-content {
+	font-size: 0.95rem; /* Slightly larger for readability */
 	color: #78350f;
-	line-height: 1.5;
+	line-height: 1.8; /* Increased from 1.6 */
 }
 
-.tips-list li::before {
-	content: '•';
-	position: absolute;
-	left: 6px;
-	color: #d97706;
+.tips-content p {
+	margin-bottom: 12px;
+}
+.tips-content ul,
+.tips-content ol {
+	padding-left: 24px;
+	margin-bottom: 16px;
+}
+.tips-content li {
+	margin-bottom: 8px; /* Increased from 4px */
+}
+.tips-content h3,
+.tips-content h4 {
+	font-size: 1rem;
+	font-weight: 600;
+	margin-top: 12px;
+	margin-bottom: 6px;
+	color: #92400e;
 }
 
-.tips-list li:last-child {
-	margin-bottom: 0;
+/* Mobile Responsive */
+@media (max-width: 768px) {
+	.day-card {
+		padding: var(--spacing-md);
+		border-radius: var(--radius-lg);
+	}
+
+	.day-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.day-badge {
+		min-width: 32px;
+		height: 32px;
+		font-size: 1rem;
+	}
+
+	.timeline-time {
+		font-size: 0.8rem;
+	}
+
+	.timeline-content {
+		padding: 12px;
+	}
+
+	.day-timeline {
+		margin-left: 0;
+		padding-left: 20px;
+	}
+
+	.timeline-item::before {
+		left: -26px;
+		width: 10px;
+		height: 10px;
+	}
 }

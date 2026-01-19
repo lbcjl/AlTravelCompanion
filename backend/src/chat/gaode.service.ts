@@ -131,7 +131,7 @@ export class GaodeService {
 
 			if (hotels.length > 0) {
 				context += `\n🏨 **推荐酒店** (位于${city})：\n`
-				hotels.slice(0, 5).forEach((p) => {
+				hotels.slice(0, 10).forEach((p) => {
 					const rating = p.biz_ext?.rating ? ` / 评分:${p.biz_ext.rating}` : ''
 					const cost = p.biz_ext?.cost ? ` / 参考价:¥${p.biz_ext.cost}` : ''
 					const tel = p.tel ? ` / 电话:${p.tel}` : ''

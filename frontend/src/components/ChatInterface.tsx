@@ -34,7 +34,7 @@ export default function ChatInterface() {
 			.find(
 				(m) =>
 					m.role === 'assistant' &&
-					(m.content.includes('| 序号 |') || m.content.includes('|--'))
+					(m.content.includes('| 序号 |') || m.content.includes('|--')),
 			)
 		return lastAiMsg ? lastAiMsg.content : ''
 	}, [conversation])
@@ -47,11 +47,30 @@ export default function ChatInterface() {
 		}
 	}
 
+	// Mobile View Toggle
+	const [activeTab, setActiveTab] = useState<'chat' | 'itinerary'>('chat')
+
+	// 当有新行程生成时，自动切换到行程 Tab (仅在移动端有效)
+	useEffect(() => {
+		// 如果有内容，且在移动端，且当前还在聊天Tab，且不在加载中(或者流式传输刚开始)
+		// 为了体验更好，我们在内容长度变化较大时跳转，这里简单处理：只要有新内容且当前是chat就跳
+		// 增加一个简单的防抖或锁，防止用户切回chat后又被强制切走
+		// 暂定策略：只要检测到有效行程内容且当前是移动端，就切过去。
+		if (latestItineraryContent && window.innerWidth <= 768) {
+			// 只有当用户确实在等待新方案时才跳转比较合理，但这里简单实现用户需求：
+			// "生成计划之后，会自动跳转"
+			setActiveTab('itinerary')
+		}
+	}, [latestItineraryContent])
+
 	return (
 		<div className='chat-layout'>
 			<LoadingModal isOpen={isLoading} />
+
 			{/* Left Panel: Glassmorphism Chat Area */}
-			<div className='chat-container'>
+			<div
+				className={`chat-container ${activeTab === 'chat' ? 'mobile-active' : 'mobile-hidden'}`}
+			>
 				<header className='chat-header'>
 					<div className='flex items-center gap-3'>
 						<div className='text-2xl'>✈️</div>
@@ -114,11 +133,31 @@ export default function ChatInterface() {
 			</div>
 
 			{/* Right Panel: Map & Itinerary */}
-			<div className='map-panel'>
+			<div
+				className={`map-panel ${activeTab === 'itinerary' ? 'mobile-active' : 'mobile-hidden'}`}
+			>
 				<ItineraryPanel
 					content={latestItineraryContent}
 					loading={isLoading && !latestItineraryContent}
 				/>
+			</div>
+
+			{/* Mobile Bottom Navigation */}
+			<div className='bottom-nav'>
+				<div
+					className={`nav-item ${activeTab === 'chat' ? 'active' : ''}`}
+					onClick={() => setActiveTab('chat')}
+				>
+					<span className='nav-icon'>💬</span>
+					<span>对话</span>
+				</div>
+				<div
+					className={`nav-item ${activeTab === 'itinerary' ? 'active' : ''}`}
+					onClick={() => setActiveTab('itinerary')}
+				>
+					<span className='nav-icon'>🗺️</span>
+					<span>行程</span>
+				</div>
 			</div>
 
 			{/* Toast Notification */}

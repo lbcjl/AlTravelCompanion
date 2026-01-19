@@ -56,9 +56,9 @@ export class LangChainService {
 - **真实性要求**：必须使用现实存在的车次/航班（如 G123, CA987），禁止臆造。
 
 ### 2. 🏨 住宿指南（必须基于真实数据）
-- **推荐酒店**：必须提供**真实的酒店名称**（优先从上方参考数据中选择）。
-- **选择理由**：基于真实地段分析（例如：“步行 5 分钟可达地铁 1 号线”）。
-- **参考价格**：提供淡季/旺季的预估价格范围。
+- **推荐区域**：首先给出**1-2个推荐居住的区域**（如“外滩步行街附近”或“人民广场地铁站周边”），并说明选择理由（例如“交通枢纽，方便前往各景点”）。
+- **精选酒店**：在上述区域中，挑选 **3家** 左右不同价位或风格的酒店（优先从上方参考数据中选择）。
+- **酒店信息**：包含酒店名称、参考价格（淡季/旺季预估）、及简短推荐理由。
 
 ### 3. 📅 每日详细行程（必须用表格）
 **必须使用以下表格格式**，每一天一个表格：
@@ -84,21 +84,27 @@ export class LangChainService {
 ### 4. 💰 预算明细
 - 列出交通（往返+市内）、住宿、餐饮、门票的预估总价。
 
-## 🚫 禁忌
-- 严禁臆造不存在的航班号或车次。
 - 严禁编造不存在的酒店或虚假地址。
-- 如果不确定某个具体数据，请标注“需查询实时数据”，而不是瞎编。`
+- 如果不确定某个具体数据，请标注“需查询实时数据”，而不是瞎编。
+
+## 🏷️ 格式强制要求 (非常重要)
+在回复的第一行，**必须**插入一条包含目的地城市的隐藏注释，格式如下：
+\`<!-- DESTINATION_CITY: 城市名称 -->\`
+例如：
+\`<!-- DESTINATION_CITY: 上海 -->\`
+\`<!-- DESTINATION_CITY: 北京 -->\`
+如果是跨城市旅行，请填写主要目的地或第一站城市。**这不应该显示给用户，但对生成地图至关重要。**`
 
 	constructor(
 		private configService: ConfigService,
 		private weatherService: WeatherService,
-		private gaodeService: GaodeService
+		private gaodeService: GaodeService,
 	) {
 		const apiKey = this.configService.get<string>('QWEN_API_KEY')
 
 		if (!apiKey) {
 			throw new Error(
-				'未配置 QWEN_API_KEY，请在 .env 文件中设置阿里云通义千问 API Key'
+				'未配置 QWEN_API_KEY，请在 .env 文件中设置阿里云通义千问 API Key',
 			)
 		}
 
@@ -137,7 +143,7 @@ export class LangChainService {
 				// 优先提取目的地城市（匹配"去XX"、"到XX"、"玩XX"等模式）
 				// 排除"从XX出发"的起点城市
 				const destinationMatch = lastUserMessage.match(
-					/(?:去|到|玩|游览|前往)([^\s，,。、]{2,5}?)(?:玩|旅游|旅行|游|自由行)?/
+					/(?:去|到|玩|游览|前往)([^\s，,。、]{2,5}?)(?:玩|旅游|旅行|游|自由行)?/,
 				)
 
 				// 如果没有明确的目的地，尝试匹配任意中文城市名
@@ -148,7 +154,7 @@ export class LangChainService {
 
 				if (city) {
 					this.logger.log(
-						`检测到目的地: ${city}，正在并发获取天气和高德POI数据...`
+						`检测到目的地: ${city}，正在并发获取天气和高德POI数据...`,
 					)
 					const [weather, pois] = await Promise.all([
 						this.weatherService.getWeather(city),
@@ -170,7 +176,7 @@ export class LangChainService {
 			// 2. 注入天气和POI信息到 System Prompt
 			let finalSystemPrompt = this.systemPrompt.replace(
 				'{weather_info}',
-				weatherInfo || '（暂无具体天气信息，请按一般季节性气候规划）'
+				weatherInfo || '（暂无具体天气信息，请按一般季节性气候规划）',
 			)
 
 			if (poiInfo) {
@@ -180,7 +186,7 @@ export class LangChainService {
 				// 如果没有POI数据，明确警告AI
 				finalSystemPrompt = finalSystemPrompt.replace(
 					'{poi_info}',
-					'⚠️ **警告：未能获取到该城市的真实POI数据。请基于你的知识库推荐该城市真实存在的知名地点，但务必确保地点的真实性和准确性。**'
+					'⚠️ **警告：未能获取到该城市的真实POI数据。请基于你的知识库推荐该城市真实存在的知名地点，但务必确保地点的真实性和准确性。**',
 				)
 			}
 

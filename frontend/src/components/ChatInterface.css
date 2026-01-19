@@ -41,6 +41,7 @@
 	font-size: 1.25rem;
 	margin: 0;
 	background: var(--primary-gradient);
+	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	font-weight: 700;
@@ -137,6 +138,44 @@
 	border: 1px solid var(--border-color);
 }
 
+/* Bottom Navigation for Mobile */
+.bottom-nav {
+	display: none;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 60px;
+	background: white;
+	border-top: 1px solid var(--border-color);
+	z-index: 1000;
+	justify-content: space-around;
+	align-items: center;
+	padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	height: 100%;
+	color: var(--text-muted);
+	font-size: 0.75rem;
+	gap: 4px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.nav-item.active {
+	color: var(--primary-color);
+}
+
+.nav-icon {
+	font-size: 1.25rem;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
 	.chat-layout {
@@ -147,14 +186,44 @@
 
 @media (max-width: 768px) {
 	.chat-layout {
+		display: block; /* Disable grid for mobile manual toggle */
 		padding: 0;
-		grid-template-columns: 1fr;
-		grid-template-rows: 1fr; /* Show chat only by default or handle responsive toggle */
-		gap: 0;
+		height: calc(100vh - 60px); /* Leave room for bottom nav */
+		overflow: hidden;
+		position: relative;
 	}
 
-	.chat-container {
+	/* Toggle logic: We will control visibility via React state adding 'hidden' classes or inline styles, 
+       but here default behavior is full width/height for active panel */
+
+	.chat-container,
+	.map-panel {
+		width: 100%;
+		height: 100%;
 		border-radius: 0;
 		border: none;
+		position: absolute;
+		top: 0;
+		left: 0;
+		transition: transform 0.3s ease;
+	}
+
+	.chat-container.mobile-hidden,
+	.map-panel.mobile-hidden {
+		transform: translateX(100%);
+		pointer-events: none;
+		opacity: 0;
+		z-index: -1;
+	}
+
+	.chat-container.mobile-active,
+	.map-panel.mobile-active {
+		transform: translateX(0);
+		opacity: 1;
+		z-index: 1;
+	}
+
+	.bottom-nav {
+		display: flex;
 	}
 }

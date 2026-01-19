@@ -50,11 +50,8 @@ export default function ItinerarySummaryCard({
 						<span className='stat-tag'>📍 {locationCount} 个地点</span>
 					</div>
 				</div>
-				<div className='card-actions'>
-					<button className='toggle-btn router-link'>查看右侧详情 →</button>
-				</div>
 			</div>
-			<div className='card-tip'>地图与详细行程已在右侧面板准备就绪</div>
+			{/* <div className='card-tip'>地图与详细行程已在右侧面板准备就绪</div> */}
 		</div>
 	)
 }

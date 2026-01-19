@@ -137,13 +137,13 @@ export default function DayCard({ day, index }: DayCardProps) {
 
 			{/* New: Tips Section */}
 			{day.tips && day.tips.length > 0 && (
-				<div className='day-tips'>
+				<div className='day-tips markdown-body'>
 					<div className='tips-header'>💡 实用小贴士</div>
-					<ul className='tips-list'>
-						{day.tips.map((tip, i) => (
-							<li key={i}>{tip.replace(/^-\s*/, '')}</li>
-						))}
-					</ul>
+					<div className='tips-content'>
+						<ReactMarkdown remarkPlugins={[remarkGfm]}>
+							{day.tips.join('\n')}
+						</ReactMarkdown>
+					</div>
 				</div>
 			)}
 		</div>

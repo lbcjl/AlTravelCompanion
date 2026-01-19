@@ -39,6 +39,7 @@ export default function RouteMap({
 	const mapContainer = useRef<HTMLDivElement>(null)
 	const [mapLoaded, setMapLoaded] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const [warning, setWarning] = useState<string | null>(null)
 
 	// useEffect for loading script
 	useEffect(() => {
@@ -98,7 +99,7 @@ export default function RouteMap({
 				locations[0],
 				'共',
 				locations.length,
-				'个地点'
+				'个地点',
 			)
 
 			// 创建地图实例
@@ -108,7 +109,6 @@ export default function RouteMap({
 				viewMode: '3D', // 确保 viewMode 一致
 				mapStyle: 'amap://styles/whitesmoke',
 			})
-			// ... rest of the code ...
 
 			// 添加自定义标记
 			locations.forEach((location, index) => {
@@ -129,7 +129,7 @@ export default function RouteMap({
 				const infoContent = generateInfoWindowContent(
 					location,
 					index,
-					locations
+					locations,
 				)
 				const infoWindow = new AMap.InfoWindow({
 					content: infoContent,
@@ -145,6 +145,8 @@ export default function RouteMap({
 
 			// 绘制真实道路路线
 			if (locations.length > 1) {
+				setWarning(null) // Reset warning
+
 				// 创建驾车路线规划实例
 				driving = new AMap.Driving({
 					map: map,
@@ -157,7 +159,7 @@ export default function RouteMap({
 				const start = new AMap.LngLat(locations[0].lng, locations[0].lat)
 				const end = new AMap.LngLat(
 					locations[locations.length - 1].lng,
-					locations[locations.length - 1].lat
+					locations[locations.length - 1].lat,
 				)
 
 				// 途经点（中间的所有点）
@@ -174,18 +176,19 @@ export default function RouteMap({
 						if (status === 'complete') {
 							console.log('真实路线规划成功')
 						} else {
-							console.error('路线规划失败:', result)
+							console.warn('路线规划失败:', result)
+							setWarning('路线规划服务不可用，已切换为直线模式')
 							// 失败时降级为直线
 							fallbackToPolyline(map, locations)
 						}
-					}
+					},
 				)
 			} else {
 				map.setFitView()
 			}
 		} catch (err: any) {
 			console.error('地图初始化错误:', err)
-			// setError(`地图初始化失败: ${err.message}`);
+			setError(`地图初始化失败: ${err.message}`)
 		}
 
 		return () => {
@@ -227,7 +230,7 @@ export default function RouteMap({
 	const generateInfoWindowContent = (
 		location: Location,
 		index: number,
-		allLocations: Location[]
+		allLocations: Location[],
 	) => {
 		const nextLocation =
 			index < allLocations.length - 1 ? allLocations[index + 1] : null
