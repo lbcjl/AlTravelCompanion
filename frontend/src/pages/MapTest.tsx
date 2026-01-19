@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import RouteMap from '../components/RouteMap'
-import { mapApi, Location, GeoCodeResult } from '../services/mapApi'
+import { mapApi } from '../services/mapApi'
 import './MapTest.css'
 
 export default function MapTest() {

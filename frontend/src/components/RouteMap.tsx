@@ -34,12 +34,12 @@ interface RouteMapProps {
 export default function RouteMap({
 	locations,
 	height = '500px',
-	mapId = 'amap-container',
+	// mapId = 'amap-container',
 }: RouteMapProps) {
 	const mapContainer = useRef<HTMLDivElement>(null)
 	const [mapLoaded, setMapLoaded] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-	const [warning, setWarning] = useState<string | null>(null)
+	// const [warning, setWarning] = useState<string | null>(null)
 
 	const AMAP_KEY = import.meta.env.VITE_AMAP_JS_API_KEY
 	const AMAP_SECURITY_KEY = import.meta.env.VITE_AMAP_SECURITY_KEY
@@ -168,9 +168,8 @@ export default function RouteMap({
 				map.add(marker)
 			})
 
-			// 绘制真实道路路线
 			if (locations.length > 1) {
-				setWarning(null) // Reset warning
+				// setWarning(null) // Reset warning
 
 				// [Multi-City Check] 如果点与点之间距离过远（>300km），不使用驾车规划，直接用直线
 				const isLongDistance = hasLongSemgent(locations, 300000) // 300km
@@ -208,7 +207,8 @@ export default function RouteMap({
 								console.log('真实路线规划成功')
 							} else {
 								console.warn('路线规划失败:', result)
-								setWarning('路线规划服务不可用，已切换为直线模式')
+								// setWarning('路线规划服务不可用，已切换为直线模式')
+								console.warn('路线规划服务不可用，已切换为直线模式')
 								fallbackToPolyline(map, locations)
 							}
 						},

@@ -49,7 +49,7 @@ export default function ItineraryMap({ content }: ItineraryMapProps) {
 			)}
 
 			<div className='map-wrapper'>
-				<RouteMap locations={currentLocations} />
+				<RouteMap locations={currentLocations as any[]} />
 			</div>
 		</div>
 	)
