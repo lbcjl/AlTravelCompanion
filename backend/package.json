@@ -26,6 +26,7 @@
 		"class-validator": "^0.14.1",
 		"express": "^5.2.1",
 		"langchain": "^1.2.10",
+		"pg": "^8.17.1",
 		"reflect-metadata": "^0.1.14",
 		"rxjs": "^7.8.1",
 		"sql.js": "^1.13.0",

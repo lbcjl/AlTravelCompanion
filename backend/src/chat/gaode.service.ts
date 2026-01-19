@@ -7,6 +7,8 @@ export interface GaodePOI {
 	name: string
 	type: string
 	address: string
+	pname?: string // 省份
+	cityname?: string // 城市
 	adname: string // 区县名称，如 "思明区"
 	location: string // "lng,lat"
 	tel: string
@@ -115,7 +117,9 @@ export class GaodeService {
 					const rating = p.biz_ext?.rating ? ` / 评分:${p.biz_ext.rating}` : ''
 					const cost = p.biz_ext?.cost ? ` / 门票:¥${p.biz_ext.cost}` : ''
 					const tel = p.tel ? ` / 电话:${p.tel}` : ''
-					context += `- **${p.name}** (${p.address})${rating}${cost}${tel}\n`
+					// [Fix] 显式添加 省+市+区 前缀，确保 AI 输出完整地址用于跨城定位
+					const fullAddress = `${p.pname || ''}${p.cityname || ''}${p.adname || ''}${p.address}`
+					context += `- **${p.name}** (${fullAddress})${rating}${cost}${tel}\n`
 				})
 			}
 
@@ -125,7 +129,8 @@ export class GaodeService {
 					const rating = p.biz_ext?.rating ? ` / 评分:${p.biz_ext.rating}` : ''
 					const cost = p.biz_ext?.cost ? ` / 人均:¥${p.biz_ext.cost}` : ''
 					const tel = p.tel ? ` / 电话:${p.tel}` : ''
-					context += `- **${p.name}** (${p.address})${rating}${cost}${tel}\n`
+					const fullAddress = `${p.pname || ''}${p.cityname || ''}${p.adname || ''}${p.address}`
+					context += `- **${p.name}** (${fullAddress})${rating}${cost}${tel}\n`
 				})
 			}
 
@@ -135,7 +140,8 @@ export class GaodeService {
 					const rating = p.biz_ext?.rating ? ` / 评分:${p.biz_ext.rating}` : ''
 					const cost = p.biz_ext?.cost ? ` / 参考价:¥${p.biz_ext.cost}` : ''
 					const tel = p.tel ? ` / 电话:${p.tel}` : ''
-					context += `- **${p.name}** (${p.address})${rating}${cost}${tel}\n`
+					const fullAddress = `${p.pname || ''}${p.cityname || ''}${p.adname || ''}${p.address}`
+					context += `- **${p.name}** (${fullAddress})${rating}${cost}${tel}\n`
 				})
 			}
 

@@ -41,12 +41,11 @@ export default function RouteMap({
 	const [error, setError] = useState<string | null>(null)
 	const [warning, setWarning] = useState<string | null>(null)
 
+	const AMAP_KEY = import.meta.env.VITE_AMAP_JS_API_KEY
+	const AMAP_SECURITY_KEY = import.meta.env.VITE_AMAP_SECURITY_KEY
+
 	// useEffect for loading script
 	useEffect(() => {
-		// 高德地图API Key (需确保 .env 已配置)
-		const AMAP_KEY = import.meta.env.VITE_AMAP_JS_API_KEY
-		const AMAP_SECURITY_KEY = import.meta.env.VITE_AMAP_SECURITY_KEY
-
 		if (!AMAP_KEY) {
 			setError('未配置高德地图API Key')
 			return
@@ -173,42 +172,48 @@ export default function RouteMap({
 			if (locations.length > 1) {
 				setWarning(null) // Reset warning
 
-				// 创建驾车路线规划实例
-				driving = new AMap.Driving({
-					map: map,
-					hideMarkers: true, // 隐藏默认标记，使用我们的自定义标记
-					showTraffic: false, // 不显示路况
-					autoFitView: true, // 自动缩放
-				})
+				// [Multi-City Check] 如果点与点之间距离过远（>300km），不使用驾车规划，直接用直线
+				const isLongDistance = hasLongSemgent(locations, 300000) // 300km
 
-				// 构造起点、终点和途经点
-				const start = new AMap.LngLat(locations[0].lng, locations[0].lat)
-				const end = new AMap.LngLat(
-					locations[locations.length - 1].lng,
-					locations[locations.length - 1].lat,
-				)
+				if (isLongDistance) {
+					console.log('检测到长距离/跨城行程，切换为直线模式')
+					// setWarning('跨城行程，显示直线路径') // Optional warning
+					fallbackToPolyline(map, locations)
+				} else {
+					// 创建驾车路线规划实例
+					driving = new AMap.Driving({
+						map: map,
+						hideMarkers: true,
+						showTraffic: false,
+						autoFitView: true,
+					})
 
-				// 途经点（中间的所有点）
-				const waypoints = locations
-					.slice(1, -1)
-					.map((loc) => new AMap.LngLat(loc.lng, loc.lat))
+					// 构造起点、终点和途经点
+					const start = new AMap.LngLat(locations[0].lng, locations[0].lat)
+					const end = new AMap.LngLat(
+						locations[locations.length - 1].lng,
+						locations[locations.length - 1].lat,
+					)
 
-				// 搜索路线
-				driving.search(
-					start,
-					end,
-					{ waypoints },
-					(status: string, result: any) => {
-						if (status === 'complete') {
-							console.log('真实路线规划成功')
-						} else {
-							console.warn('路线规划失败:', result)
-							setWarning('路线规划服务不可用，已切换为直线模式')
-							// 失败时降级为直线
-							fallbackToPolyline(map, locations)
-						}
-					},
-				)
+					const waypoints = locations
+						.slice(1, -1)
+						.map((loc) => new AMap.LngLat(loc.lng, loc.lat))
+
+					driving.search(
+						start,
+						end,
+						{ waypoints },
+						(status: string, result: any) => {
+							if (status === 'complete') {
+								console.log('真实路线规划成功')
+							} else {
+								console.warn('路线规划失败:', result)
+								setWarning('路线规划服务不可用，已切换为直线模式')
+								fallbackToPolyline(map, locations)
+							}
+						},
+					)
+				}
 			} else {
 				map.setFitView()
 			}
@@ -250,6 +255,20 @@ export default function RouteMap({
 		})
 		map.add(polyline)
 		map.setFitView()
+	}
+
+	// 辅助：计算两点间距离是否超过阈值（单位：米）
+	const hasLongSemgent = (locs: Location[], threshold: number) => {
+		const AMap = (window as any).AMap
+		for (let i = 0; i < locs.length - 1; i++) {
+			const p1 = new AMap.LngLat(locs[i].lng, locs[i].lat)
+			const p2 = new AMap.LngLat(locs[i + 1].lng, locs[i + 1].lat)
+			const distance = p1.distance(p2)
+			if (distance > threshold) {
+				return true
+			}
+		}
+		return false
 	}
 
 	// 生成信息窗口内容

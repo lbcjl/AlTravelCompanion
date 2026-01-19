@@ -170,8 +170,20 @@ export class AmapService {
 
 			// 2. 尝试使用地址进行地理编码
 			let result: GeoCodeResult | null = null
+
+			// [Multi-City Fix] 如果地址中包含明确的城市名（如“厦门市”），则优先使用地址中的城市，或者不传 global city 以避免冲突
+			let targetCity = city
+			const cityMatch = location.address.match(/([\u4e00-\u9fa5]{2,5})市/)
+			if (cityMatch) {
+				// 如果地址里明确写了某某市，就以此为准（或者干脆不传city让AMap自己解析）
+				// AMap Geocode API 如果 address="福建省厦门市..." 且 city="漳州"，可能会报错或找不到。
+				// 所以如果检测到地址有“市”，我们清除 city 参数，让 API 全局匹配地址
+				targetCity = undefined
+				// 也可以设定为 cityMatch[0], 但 undefined 对完整地址更安全
+			}
+
 			if (!isInvalidName(location.address)) {
-				result = await this.geocode(location.address, city)
+				result = await this.geocode(location.address, targetCity)
 			}
 
 			if (result) {
