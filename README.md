@@ -33,6 +33,7 @@
 - Node.js 18+
 - pnpm 8+
 - 阿里云通义千问 API Key ([获取地址](https://bailian.console.aliyun.com))
+- (可选) Tavily API Key ([获取地址](https://tavily.com)) - 用于增强实时搜索能力
 
 ### 步骤
 

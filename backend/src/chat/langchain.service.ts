@@ -210,22 +210,51 @@ export class LangChainService {
 				}
 			}
 
-			// 4. DuckDuckGo 搜索增强
+			// 4. 搜索增强 (优先 Tavily, 降级 DuckDuckGo)
 			let searchInfo = ''
 			if (city) {
 				try {
-					this.logger.log(`🔍 正在使用 DuckDuckGo 搜索 "${city} 旅游攻略"...`)
-					const searchTool = new DuckDuckGoSearch()
-					// 搜索最新的旅游信息
-					const searchResults = await searchTool.invoke(
-						`${city} 旅游攻略 必去景点 美食推荐`,
-					)
-					if (searchResults) {
-						searchInfo = `\n## 🌐 网络搜索实时资讯 (DuckDuckGo)\n${searchResults}\n`
-						this.logger.log(`✅ 搜索成功 (长度: ${searchResults.length})`)
+					const tavilyKey = this.configService.get<string>('TAVILY_API_KEY')
+
+					if (tavilyKey) {
+						// 方案 A: 使用 Tavily (更稳定，专门为 AI 优化)
+						this.logger.log(
+							`🔍 使用 Tavily 搜索 "${city} 旅游攻略" (API Key present)...`,
+						)
+						// 动态引入本地自定义工具
+						const { TavilyTool } = await import('./tavily.tool')
+						const searchTool = new TavilyTool(tavilyKey)
+
+						const searchResults = await searchTool.invoke(
+							`${city} 旅游攻略 必去景点 美食推荐`,
+						)
+						if (searchResults) {
+							searchInfo = `\n## 🌐 网络搜索实时资讯 (Tavily)\n${searchResults}\n`
+							this.logger.log(`✅ Tavily 搜索成功`)
+						}
+					} else {
+						// 方案 B: 使用 DuckDuckGo (免费，有时会被限流)
+						this.logger.log(
+							`🔍 使用 DuckDuckGo 搜索 "${city} 旅游攻略" (Fallback)...`,
+						)
+						const searchTool = new DuckDuckGoSearch()
+						const searchResults = await searchTool.invoke(
+							`${city} 旅游攻略 必去景点 美食推荐`,
+						)
+						if (searchResults) {
+							searchInfo = `\n## 🌐 网络搜索实时资讯 (DuckDuckGo)\n${searchResults}\n`
+							this.logger.log(`✅ DuckDuckGo 搜索成功`)
+						}
 					}
 				} catch (err) {
-					this.logger.warn(`⚠️ 搜索失败: ${err.message}`)
+					if (
+						err.message?.includes('too quickly') ||
+						err.message?.includes('429')
+					) {
+						this.logger.warn(`⚠️ 搜索请求过快被限流，本次跳过 (不影响主流程)`)
+					} else {
+						this.logger.warn(`⚠️ 搜索失败: ${err.message}`)
+					}
 				}
 			}
 
