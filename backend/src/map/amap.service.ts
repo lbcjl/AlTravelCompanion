@@ -183,7 +183,14 @@ export class AmapService {
 			}
 
 			if (!isInvalidName(location.address)) {
-				result = await this.geocode(location.address, targetCity)
+				try {
+					result = await this.geocode(location.address, targetCity)
+				} catch (err) {
+					this.logger.warn(
+						`精准地理编码异常 (将尝试关键字搜索): ${location.address} - ${err.message}`,
+					)
+					result = null
+				}
 			}
 
 			if (result) {
