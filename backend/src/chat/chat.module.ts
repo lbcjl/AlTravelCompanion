@@ -9,6 +9,7 @@ import { Message } from '../entities/message.entity'
 
 import { WeatherService } from './weather.service'
 import { GaodeService } from './gaode.service'
+import { TrainService } from './train.service'
 
 @Module({
 	imports: [TypeOrmModule.forFeature([Conversation, Message])],
@@ -19,6 +20,7 @@ import { GaodeService } from './gaode.service'
 		LangChainService,
 		WeatherService,
 		GaodeService,
+		TrainService,
 	],
 	exports: [
 		ChatService,
@@ -26,6 +28,7 @@ import { GaodeService } from './gaode.service'
 		LangChainService,
 		WeatherService,
 		GaodeService,
+		TrainService,
 	],
 })
 export class ChatModule {}

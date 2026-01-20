@@ -7,8 +7,11 @@ import {
 	AIMessage,
 	ToolMessage,
 } from '@langchain/core/messages'
+import { DynamicStructuredTool } from '@langchain/core/tools'
+import { z } from 'zod'
 import { WeatherService } from './weather.service'
 import { GaodeService } from './gaode.service'
+import { TrainService } from './train.service'
 
 import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search'
 
@@ -40,20 +43,17 @@ export class LangChainService {
 ## 📍 真实地点参考数据 (来自高德地图) - ⚠️ 重要约束
 {poi_info}
 
+
 ## 🚨 强制要求：
+- **关于火车/高铁票 (CRITICAL)**：必须使用 \`search_train_tickets\` 工具查询真实车次。**严禁编造**车次（如 G123）或价格。如果工具查询失败或无票，请明确告知用户无直达车次，建议中转，绝对不要生成虚假数据。
 - **所有推荐地点（景点、餐厅、酒店）必须优先且仅从上方【真实数据参考】中选择**
-- **严禁编造**不存在的地点。
 - **天气数据**：必须严格使用提供的【实时天气参考】。
 - **跨城市规划**：如果用户请求跨城市旅行（如北京到上海），请按时间顺序合理安排行程。
 - **路线合理性 (关键)**：相邻地点之间的交通时间**不应超过 1 小时**。请合理安排游玩顺序，避免东奔西跑和来回绕路。
 - **禁止推荐非行程相关城市的地点**（例如行程只有北京，不要推荐上海的地点）。
 - **预算合理性检查**：核对预算与真实价格。
-- **往返交通信息 (重要)**：必须在行程开头和结尾包含详细的往返交通信息，包括：
-  - 具体的交通方式（高铁、飞机、汽车等）
-  - 推荐的车次号或航班号（如 G123、CZ3456）
-  - 出发时间、到达时间、历时
-  - 票价参考
-  - 出发站/机场和到达站/机场
+- **交通信息地址格式 (重要)**：
+  - 对于 \`type: "transport"\`，\`address\` 请只填目标站点（如“南京南站”或“浦东机场T2”），**不要**填写“A站 -> B站”这种格式，否则地图无法定位。
 
 ## 🗣️ 语气与风格
 请保持 **热情、专业且令人向往** 的语气。
@@ -111,8 +111,8 @@ export class LangChainService {
           {
             "time": "08:00",
             "type": "transport",
-            "name": "北京南 → 上海虹桥",
-            "address": "北京南站 → 上海虹桥站",
+            "name": "北京南 → 上海虹桥", // name 可以写路线
+            "address": "上海虹桥",        // <--- ⚠️ address 只写具体的一个站点名，以便地图定位
             "duration": "5小时30分",
             "cost": "¥553",
             "description": "高铁直达，舒适快捷",
@@ -141,6 +141,7 @@ IMPORTANT:
 		private configService: ConfigService,
 		private weatherService: WeatherService,
 		private gaodeService: GaodeService,
+		private trainService: TrainService, // Inject TrainService
 	) {
 		// 支持新旧配置格式，实现向后兼容
 		// 优先使用新的通用配置 AI_API_KEY, 如果不存在则回退到 QWEN_API_KEY
@@ -148,46 +149,82 @@ IMPORTANT:
 			this.configService.get<string>('AI_API_KEY') ||
 			this.configService.get<string>('QWEN_API_KEY')
 
-		if (!apiKey) {
-			throw new Error(
-				'未配置 AI API Key，请在 .env 文件中设置 AI_API_KEY（或旧的 QWEN_API_KEY）',
-			)
-		}
-
 		// 读取模型配置（新配置优先）
-		const model =
+		const modelName =
 			this.configService.get<string>('AI_MODEL') ||
 			this.configService.get<string>('QWEN_MODEL') ||
-			'qwen-turbo' // 默认值
+			'qwen-plus' // Changed default model
 
 		// 读取API端点配置（新配置优先）
 		const baseURL =
 			this.configService.get<string>('AI_BASE_URL') ||
 			'https://dashscope.aliyuncs.com/compatible-mode/v1' // 默认通义千问
 
-		// 读取温度参数
-		const temperature =
-			parseFloat(this.configService.get<string>('AI_TEMPERATURE') || '0.7') ||
-			0.7
+		if (!apiKey) {
+			this.logger.error(
+				'未配置 AI_API_KEY (或旧配置 QWEN_API_KEY)。AI 功能将无法使用。',
+			)
+		}
 
-		// 读取最大token数
-		const maxTokens =
-			parseInt(this.configService.get<string>('AI_MAX_TOKENS') || '6000', 10) ||
-			6000
-
-		// 使用 LangChain 的 ChatOpenAI，支持任何兼容 OpenAI API 的服务
-		this.chatModel = new ChatOpenAI({
-			apiKey,
-			model,
-			temperature,
-			maxTokens,
+		// 初始化 ChatOpenAI
+		const llm = new ChatOpenAI({
+			apiKey: apiKey, // Use 'apiKey' which is passed directly to OpenAI client
+			modelName: modelName,
 			configuration: {
-				baseURL,
+				baseURL: baseURL,
+			},
+			temperature: 0.7, // Hardcoded as per user's instruction
+			streaming: true,
+		})
+
+		// 1. 获取当前时间的工具
+		const timeTool = new DynamicStructuredTool({
+			name: 'get_current_time',
+			description:
+				'获取当前准确的日期和时间。在回答涉及日期的问题时必须调用此工具。',
+			schema: z.object({
+				timezone: z
+					.string()
+					.optional()
+					.describe('Timezone to use (e.g., "Asia/Shanghai")'),
+			}),
+			func: async ({ timezone }) => {
+				const timeStr = new Date().toLocaleString('zh-CN', {
+					timeZone: timezone || 'Asia/Shanghai',
+					hour12: false,
+				})
+				return `当前时间 (${timezone || 'Asia/Shanghai'}): ${timeStr}`
 			},
 		})
 
+		// 2. 网络搜索工具
+		const searchTool = new DuckDuckGoSearch({
+			maxResults: 3,
+			searchOptions: {
+				locale: 'zh-CN',
+			},
+		})
+
+		// 3. 12306 火车票查询工具
+		const trainTool = new DynamicStructuredTool({
+			name: 'search_train_tickets',
+			description:
+				'查询中国国内火车/高铁车票、时刻表和余票。输入：出发地、目的地、日期（YYYY-MM-DD）。如查询不到，请尝试更换日期或检查城市名称。',
+			schema: z.object({
+				from: z.string().describe('出发城市或车站名，如：北京、上海虹桥'),
+				to: z.string().describe('到达城市或车站名，如：济南、广州南'),
+				date: z.string().describe('出发日期，格式：YYYY-MM-DD'),
+			}),
+			func: async ({ from, to, date }) => {
+				return await this.trainService.searchTickets(from, to, date)
+			},
+		})
+
+		// 绑定工具到 LLM
+		this.chatModel = llm.bindTools([timeTool, searchTool, trainTool]) as any
+
 		this.logger.log(
-			`🧠 LangChain 服务已初始化 | 模型: ${model} | 端点: ${baseURL}`,
+			`🧠 LangChain 服务已初始化 | 模型: ${modelName} | 端点: ${baseURL}`,
 		)
 		// Trigger recompile check
 	}
