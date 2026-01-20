@@ -32,8 +32,17 @@ Render 提供免费的 Web Service 托管。
 4.  向下滚动找到 **Environment Variables** (环境变量)，添加：
     - `POSTGRES_URL`: (步骤 2 中获取的数据库连接字符串)
     - `AMAP_WEB_API_KEY`: (你的高德 Web 服务 Key)
-    - `QWEN_API_KEY`: (你的阿里云通义千问 Key)
-    - `QWEN_MODEL`: `qwen-max`
+    - `AI_API_KEY`: (你的 AI 模型 API Key)
+    - `AI_MODEL`: `qwen-max` (或 `gpt-4`, `deepseek-chat` 等)
+    - `AI_BASE_URL`: `https://dashscope.aliyuncs.com/compatible-mode/v1` (根据选择的服务填写)
+
+    💡 **切换 AI 提供商**：
+    - 通义千问（默认）: `AI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1`
+    - OpenAI: `AI_BASE_URL=https://api.openai.com/v1`
+    - DeepSeek: `AI_BASE_URL=https://api.deepseek.com`
+
+    详见 [AI配置指南](AI_CONFIG_GUIDE.md)
+
 5.  点击 **Create Web Service**。等待部署完成（约几分钟）。
 6.  部署成功后，复制页面左上角的 URL (例如 `https://ai-travel-backend.onrender.com`)。
 

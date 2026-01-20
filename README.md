@@ -1,6 +1,6 @@
 # 🌍 智能旅游规划应用
 
-基于阿里通义千问 AI 的智能旅游规划应用，通过对话式交互帮助用户生成个性化旅行方案。
+基于 AI 大模型的智能旅游规划应用，通过对话式交互帮助用户生成个性化旅行方案。支持通义千问、OpenAI、DeepSeek 等多种 AI 服务。
 
 ## ✨ 特性
 
@@ -24,7 +24,8 @@
 - NestJS 10
 - TypeScript
 - TypeORM + SQLite
-- 阿里云通义千问 (DashScope SDK)
+- AI 大模型（通义千问 / OpenAI / DeepSeek / Ollama 等）
+- LangChain
 
 ## 📦 安装
 
@@ -32,7 +33,11 @@
 
 - Node.js 18+
 - pnpm 8+
-- 阿里云通义千问 API Key ([获取地址](https://bailian.console.aliyun.com))
+- AI 模型 API Key（根据选择的服务申请）：
+  - 通义千问：[https://bailian.console.aliyun.com](https://bailian.console.aliyun.com)
+  - OpenAI：[https://platform.openai.com](https://platform.openai.com)
+  - DeepSeek：[https://platform.deepseek.com](https://platform.deepseek.com)
+- 高德地图 API Key ([获取地址](https://lbs.amap.com/))
 - (可选) Tavily API Key ([获取地址](https://tavily.com)) - 用于增强实时搜索能力
 
 ### 步骤
@@ -56,8 +61,10 @@ pnpm install
 # 复制环境变量模板
 cp .env.example .env
 
-# 编辑 .env 文件，填入你的 API Key
-# QWEN_API_KEY=your_actual_api_key_here
+# 编辑 .env 文件，配置你选择的 AI 模型
+# AI_API_KEY=your_api_key_here
+# AI_MODEL=qwen-turbo  # 或 gpt-4, deepseek-chat 等
+# AI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1  # API 端点
 ```
 
 4. **启动开发服务器**

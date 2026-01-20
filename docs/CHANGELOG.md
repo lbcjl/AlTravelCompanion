@@ -334,6 +334,9 @@
 - **UI**: Further reduced `CompactItineraryView` width to `240px` based on user feedback to ensure it fits comfortably within the chat layout.
 - **UI**: Fixed wrapping issue for "Highlights" and "Recommended" labels in `DayCard`. Increased label width and enforced no-wrap to ensure neat alignment.
 - **I18n**: Fixed issue where weather information was displayed in English. Updated the AI system prompt to enforce translation of weather conditions (e.g., "Cloudy" -> "多云") to Chinese.
+- **Feature**: Enhanced AI prompt to require detailed round-trip transportation information, including train/flight numbers, departure/arrival times, and ticket prices.
+- **Optimization**: Enhanced geocoding fallback strategy with 4-layer mechanism to significantly improve coordinate acquisition success rate: 1) Original name search 2) Cleaned name search (removing "前往"/"返回" prefixes) 3) Address keyword extraction 4) Nationwide search (without city restriction).
+- **Feature**: Implemented configurable AI model architecture. Now supports switching between different AI providers (Qwen, OpenAI, DeepSeek, Ollama, etc.) by simply modifying `.env` file parameters (AI*API_KEY, AI_MODEL, AI_BASE_URL). Maintains backward compatibility with old QWEN*\* configuration.
 
 ## [2026-01-18 16:30] Gaode API & Process Cleanup
 

@@ -48,6 +48,12 @@ export class LangChainService {
 - **路线合理性 (关键)**：相邻地点之间的交通时间**不应超过 1 小时**。请合理安排游玩顺序，避免东奔西跑和来回绕路。
 - **禁止推荐非行程相关城市的地点**（例如行程只有北京，不要推荐上海的地点）。
 - **预算合理性检查**：核对预算与真实价格。
+- **往返交通信息 (重要)**：必须在行程开头和结尾包含详细的往返交通信息，包括：
+  - 具体的交通方式（高铁、飞机、汽车等）
+  - 推荐的车次号或航班号（如 G123、CZ3456）
+  - 出发时间、到达时间、历时
+  - 票价参考
+  - 出发站/机场和到达站/机场
 
 ## 🗣️ 语气与风格
 请保持 **热情、专业且令人向往** 的语气。
@@ -100,6 +106,20 @@ export class LangChainService {
               "duration": "15分钟",
               "cost": "¥5"
             }
+          },
+          // 交通类型示例（往返交通必须包含）
+          {
+            "time": "08:00",
+            "type": "transport",
+            "name": "北京南 → 上海虹桥",
+            "address": "北京南站 → 上海虹桥站",
+            "duration": "5小时30分",
+            "cost": "¥553",
+            "description": "高铁直达，舒适快捷",
+            "trainNumber": "G123",      // 火车/高铁车次
+            "flightNumber": "",         // 航班号（如CZ3456）
+            "departureTime": "08:00",
+            "arrivalTime": "13:30"
           }
         ],
         "tips": ["避坑指南1", "注意事项2"]
@@ -122,26 +142,53 @@ IMPORTANT:
 		private weatherService: WeatherService,
 		private gaodeService: GaodeService,
 	) {
-		const apiKey = this.configService.get<string>('QWEN_API_KEY')
+		// 支持新旧配置格式，实现向后兼容
+		// 优先使用新的通用配置 AI_API_KEY, 如果不存在则回退到 QWEN_API_KEY
+		const apiKey =
+			this.configService.get<string>('AI_API_KEY') ||
+			this.configService.get<string>('QWEN_API_KEY')
 
 		if (!apiKey) {
 			throw new Error(
-				'未配置 QWEN_API_KEY，请在 .env 文件中设置阿里云通义千问 API Key',
+				'未配置 AI API Key，请在 .env 文件中设置 AI_API_KEY（或旧的 QWEN_API_KEY）',
 			)
 		}
 
-		// 使用 LangChain 的 ChatOpenAI，配置为通义千问端点
+		// 读取模型配置（新配置优先）
+		const model =
+			this.configService.get<string>('AI_MODEL') ||
+			this.configService.get<string>('QWEN_MODEL') ||
+			'qwen-turbo' // 默认值
+
+		// 读取API端点配置（新配置优先）
+		const baseURL =
+			this.configService.get<string>('AI_BASE_URL') ||
+			'https://dashscope.aliyuncs.com/compatible-mode/v1' // 默认通义千问
+
+		// 读取温度参数
+		const temperature =
+			parseFloat(this.configService.get<string>('AI_TEMPERATURE') || '0.7') ||
+			0.7
+
+		// 读取最大token数
+		const maxTokens =
+			parseInt(this.configService.get<string>('AI_MAX_TOKENS') || '6000', 10) ||
+			6000
+
+		// 使用 LangChain 的 ChatOpenAI，支持任何兼容 OpenAI API 的服务
 		this.chatModel = new ChatOpenAI({
 			apiKey,
-			model: this.configService.get<string>('QWEN_MODEL') || 'qwen-plus', // Default to qwen-plus for better capacity
-			temperature: 0.7,
-			maxTokens: 6000, // 增加 Token 上限以容纳更详细的方案
+			model,
+			temperature,
+			maxTokens,
 			configuration: {
-				baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+				baseURL,
 			},
 		})
 
-		this.logger.log('🧠 LangChain 服务已初始化，使用通义千问模型')
+		this.logger.log(
+			`🧠 LangChain 服务已初始化 | 模型: ${model} | 端点: ${baseURL}`,
+		)
 		// Trigger recompile check
 	}
 

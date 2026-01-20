@@ -203,7 +203,44 @@ export class AmapService {
 				this.logger.log(
 					`精准地理编码失败，尝试使用关键字搜索(Place Search): ${location.name} in ${city}`,
 				)
-				const searchResult = await this.textSearch(location.name, city)
+				// 4.1 首先尝试用原始name搜索
+				let searchResult = await this.textSearch(location.name, city)
+
+				// 4.2 如果name包含无意义前缀（如"前往"、"返回"），清洗后再试
+				if (!searchResult) {
+					const cleanedName = location.name
+						.replace(/^(前往|返回|去|到|游览|参观)\s*/g, '')
+						.replace(/(酒店|车站|机场)$/g, '')
+						.trim()
+
+					if (cleanedName && cleanedName !== location.name) {
+						this.logger.log(
+							`尝试使用清洗后的关键字: "${cleanedName}" (原: "${location.name}")`,
+						)
+						searchResult = await this.textSearch(cleanedName, city)
+					}
+				}
+
+				// 4.3 如果address包含详细地址，提取关键部分再试
+				if (!searchResult && location.address) {
+					const addressKeywords = location.address
+						.replace(/^.*(省|市|区|县|镇|乡|街道)/g, '')
+						.replace(/\d+号.*$/g, '')
+						.trim()
+
+					if (addressKeywords && addressKeywords.length > 2) {
+						this.logger.log(`尝试使用地址关键词: "${addressKeywords}"`)
+						searchResult = await this.textSearch(addressKeywords, city)
+					}
+				}
+
+				// 4.4 如果还是失败，尝试不限制城市搜索
+				if (!searchResult && city) {
+					this.logger.log(
+						`城市限定搜索失败，尝试全国范围搜索: "${location.name}"`,
+					)
+					searchResult = await this.textSearch(location.name, undefined)
+				}
 
 				if (searchResult) {
 					results.push({
