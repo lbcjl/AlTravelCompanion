@@ -315,7 +315,9 @@ export class LangChainService {
 				weekday: 'short',
 			})
 
-			const dateContext = `\n## 📅 当前时间参考 (用户时区: ${timezone})\n现在是：${timeString} ${weekday}\n`
+			const dateContext = `\n## 📅 当前时间参考 (用户时区: ${timezone})\n现在是：${timeString} ${weekday}\n**IMPORTANT**: 当用户提到"明天"、"后天"、"接下来三天"等相对时间时，你**必须**基于上述当前时间计算出具体的日期(YYYY-MM-DD)，并在行程表中明确展示。`
+
+			this.logger.log(`[Date Context] 注入时间上下文: ${timeString} ${weekday}`)
 
 			let finalSystemPrompt = this.systemPrompt
 				.replace(
@@ -392,74 +394,100 @@ export class LangChainService {
 			// Pass dynamic timezone to TimeTool
 			const tools = [new Calculator(), new TimeTool(timezone)]
 			const modelWithTools = this.chatModel.bindTools(tools)
+			const logger = this.logger
 
-			// 定义处理流的函数
-			const processStream = async function* (
+			// 递归执行流处理函数
+			const executeLoop = async function* (
 				inputMessages: any[],
+				depth = 0,
 			): AsyncGenerator<string> {
+				logger.debug(`[StreamLoop] Depth ${depth}: Starting stream...`)
 				const stream = await modelWithTools.stream(inputMessages)
-				let finalContent = ''
-				let toolCallChunks: any[] = []
+				let accumulatedMessage: any = null
+				let contentCount = 0
 
 				for await (const chunk of stream) {
 					// 1. 实时返回文本内容
 					if (chunk.content) {
+						contentCount += chunk.content.length
 						yield chunk.content as string
-						finalContent += chunk.content
 					}
-					// 2. 收集工具调用片段
-					if (chunk.tool_call_chunks && chunk.tool_call_chunks.length > 0) {
-						toolCallChunks = toolCallChunks.concat(chunk.tool_call_chunks)
+
+					// 2. 累积 Chunk 以便后续提取完整的 tool_calls
+					if (!accumulatedMessage) {
+						accumulatedMessage = chunk
+					} else {
+						// LangChain 的 concat 会自动合并 content 和 tool_call_chunks
+						accumulatedMessage = accumulatedMessage.concat(chunk)
 					}
 				}
 
+				logger.debug(
+					`[StreamLoop] Depth ${depth}: Stream finished. Content chars: ${contentCount}`,
+				)
+
 				// 3. 如果有工具调用，执行并递归
-				if (toolCallChunks.length > 0) {
-					// 构造完整的 AI Message (包含 tool_calls)
-					const aiMsg = await modelWithTools.invoke(inputMessages)
+				if (accumulatedMessage?.tool_calls?.length > 0) {
+					const toolCalls = accumulatedMessage.tool_calls
+					logger.log(
+						`[ToolCall] Depth ${depth}: Detected ${toolCalls.length} tools: ${toolCalls.map((t: any) => t.name).join(', ')}`,
+					)
 
-					if (aiMsg.tool_calls && aiMsg.tool_calls.length > 0) {
-						// 将 AI 的回复 (包含 tool_calls) 加入历史
-						const newMessages = [...inputMessages, aiMsg]
+					// 将完整的 AI 回复 (Accumulated) 加入历史，确保上下文连贯
+					const newMessages = [...inputMessages, accumulatedMessage]
 
-						// 执行工具
-						for (const toolCall of aiMsg.tool_calls) {
+					// 并行执行工具
+					const toolResults = await Promise.all(
+						toolCalls.map(async (toolCall: any) => {
 							const tool = tools.find((t) => t.name === toolCall.name)
 							if (tool) {
 								try {
+									logger.debug(`[ToolExec] Executing ${tool.name}...`)
 									const result = await tool.invoke(toolCall.args)
-
-									newMessages.push(
-										new ToolMessage({
-											tool_call_id: toolCall.id!,
-											content: result,
-										}),
+									logger.debug(
+										`[ToolExec] ${tool.name} result: ${JSON.stringify(result).slice(0, 50)}...`,
 									)
+									return new ToolMessage({
+										tool_call_id: toolCall.id!,
+										content: JSON.stringify(result), // 确保是字符串
+									})
 								} catch (err) {
 									console.error(`Tool execution failed:`, err)
-									newMessages.push(
-										new ToolMessage({
-											tool_call_id: toolCall.id!,
-											content: 'Error: Calculation failed.',
-										}),
-									)
+									return new ToolMessage({
+										tool_call_id: toolCall.id!,
+										content: 'Error: Execution failed.',
+									})
 								}
 							}
-						}
+							return null
+						}),
+					)
 
-						// 再次调用模型生成基于工具结果的回答 (递归) - 这里使用流式
-						const finalStream = await modelWithTools.stream(newMessages)
-						for await (const chunk of finalStream) {
-							if (chunk.content) yield chunk.content as string
-						}
+					// 过滤掉无效结果并添加到消息历史
+					for (const res of toolResults) {
+						if (res) newMessages.push(res)
+					}
+
+					// 递归调用
+					logger.debug(
+						`[StreamLoop] Depth ${depth}: Recursing to Depth ${depth + 1}...`,
+					)
+					yield* executeLoop(newMessages, depth + 1)
+				} else {
+					if (accumulatedMessage?.tool_calls) {
+						logger.debug(
+							`[StreamLoop] Depth ${depth}: No valid tool calls found in accumulated message.`,
+						)
 					}
 				}
 			}
 
-			yield* processStream(langChainMessages)
+			yield* executeLoop(langChainMessages)
 		} catch (error) {
 			this.logger.error('LangChain 流式调用失败', error)
 			throw error
+		} finally {
+			this.logger.debug('LangChain chatStream completed or terminated.')
 		}
 	}
 

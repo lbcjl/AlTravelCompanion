@@ -32,7 +32,7 @@ export class WeatherService {
 			const url = `${this.baseUrl}/${encodeURIComponent(city)}?format=j1`
 			this.logger.log(`Fetching weather for ${city} from ${url}`)
 
-			const response = await axios.get(url, { timeout: 3000 })
+			const response = await axios.get(url, { timeout: 4000 })
 			const data = response.data
 
 			if (!data || !data.weather) {

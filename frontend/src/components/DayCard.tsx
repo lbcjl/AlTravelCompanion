@@ -26,7 +26,7 @@ export default function DayCard({ day, index }: DayCardProps) {
 		<div className={`day-card ${isOverview ? 'overview-card' : ''}`}>
 			<div className='day-header'>
 				<div className={`day-badge ${isOverview ? 'overview-badge' : ''}`}>
-					{isOverview ? '序' : index}
+					{isOverview ? '序' : index + 1}
 				</div>
 				<div className='day-title-section'>
 					<h3>{isOverview ? '行程亮点与准备' : title}</h3>
@@ -36,7 +36,9 @@ export default function DayCard({ day, index }: DayCardProps) {
 								☀️ {day.weather}
 							</span>
 						)}
-						{totalCost > 0 && (
+						{totalCost === 0 ? (
+							<span className='cost-tag free'>免费</span>
+						) : (
 							<span className='cost-tag' title='预计花销'>
 								💰 ¥{totalCost}
 							</span>
@@ -75,7 +77,11 @@ export default function DayCard({ day, index }: DayCardProps) {
 							</div>
 							{loc.cost && (
 								<div className='transport-price'>
-									{loc.cost.includes('¥') ? loc.cost : `¥${loc.cost}`}
+									{loc.cost === '0' || loc.cost === '0元'
+										? '免费'
+										: loc.cost.includes('¥')
+											? loc.cost
+											: `¥${loc.cost}`}
 								</div>
 							)}
 						</div>
@@ -100,9 +106,13 @@ export default function DayCard({ day, index }: DayCardProps) {
 									</div>
 									{loc.cost && (
 										<div className='timeline-cost'>
-											{loc.cost.includes('¥') || loc.cost.includes('免费')
-												? loc.cost
-												: `¥${loc.cost}`}
+											{loc.cost === '0' ||
+											loc.cost === '0元' ||
+											loc.cost.includes('免费')
+												? '免费'
+												: loc.cost.includes('¥')
+													? loc.cost
+													: `¥${loc.cost}`}
 										</div>
 									)}
 								</div>

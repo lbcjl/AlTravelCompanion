@@ -307,8 +307,16 @@ export const parseMarkdownTable = (content: string): DayItinerary[] => {
 					currentDescription.push(line)
 				} else {
 					// After table -> Tips
-					// Simple heuristic: if it looks like a list item or note
-					currentTips.push(line)
+					// Stop if we hit a new header (e.g., "### 4. 预算明细")
+					if (line.startsWith('#')) {
+						hasSeenTable = false // Reset state? Or just stop collecting?
+						// Actually, if we hit a new header, it might be a new section we don't handle here
+						// creating a "flush" effect for the current day isn't right if it's just a sub-section
+						// But for now, we just stop collecting tips to avoid including "### Budget"
+					} else {
+						// Simple heuristic: if it looks like a list item or note
+						currentTips.push(line)
+					}
 				}
 			}
 		}

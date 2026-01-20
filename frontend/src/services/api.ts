@@ -43,11 +43,21 @@ export const chatApi = {
 		data: SendMessageRequest,
 		onChunk: (chunk: string) => void,
 	): Promise<SendMessageResponse> {
+		const token = localStorage.getItem('token')
+		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+		const headers: HeadersInit = {
+			'Content-Type': 'application/json',
+			'X-Timezone': timezone,
+		}
+
+		if (token) {
+			headers['Authorization'] = `Bearer ${token}`
+		}
+
 		const response = await fetch('/api/chat/stream', {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
+			headers,
 			body: JSON.stringify(data),
 		})
 
